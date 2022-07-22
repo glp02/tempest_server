@@ -1,2 +1,7 @@
 /shelf/
 /workspace.xml
+/tasks.xml
+*.iws
+/libraries/
+*.iml
+modules.xml
