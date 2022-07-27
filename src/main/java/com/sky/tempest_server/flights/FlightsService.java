@@ -1,16 +1,13 @@
 package com.sky.tempest_server.flights;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.sky.tempest_server.flights.entities.Airport;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -68,14 +65,13 @@ public class FlightsService {
         JsonNode responseJSON = mapper.readValue(response.getBody(), JsonNode.class);
         JsonNode locationsJSON = responseJSON.get("locations");
         List<JsonNode> locationsList = readJsonArrayToJsonNodeList.readValue(locationsJSON);
-        List<Airport> airportList = locationsList.stream().map((locationNode) -> new Airport(
+
+        return locationsList.stream().map((locationNode) -> new Airport(
                 locationNode.get("name").textValue(),
                 locationNode.get("code").textValue(),
                 locationNode.get("city").get("name").textValue(),
                 locationNode.get("city").get("country").get("name").textValue()
             )).collect(Collectors.toList());
-
-        return airportList;
-        }
-
     }
+}
+
