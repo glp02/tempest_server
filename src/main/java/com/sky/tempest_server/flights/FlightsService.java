@@ -3,11 +3,9 @@ package com.sky.tempest_server.flights;
 import com.sky.tempest_server.flights.entities.Airport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -24,20 +22,33 @@ public class FlightsService {
         this.restTemplate = restTemplateBuilder.build();
     }
 
-    public ResponseEntity<String> searchAirports(String searchText) {
+    public HttpEntity<String> searchAirports(String searchText) {
         String url = "https://tequila-api.kiwi.com/locations/query";
+
         HttpHeaders headers = new HttpHeaders();
-        headers.set("apikey","keygoeshere");
+        headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+//        headers.set("Accept-Encoding", "gzip");
+        headers.set("apikey","APIKEYHERE");
         HttpEntity<?> entity = new HttpEntity<>(headers);
+
+        String urlTemplate = UriComponentsBuilder.fromHttpUrl(url)
+                .queryParam("term", searchText)
+                .queryParam("location_types", "airport")
+                .encode()
+                .toUriString();
 
         Map<String, String> params = new HashMap<>();
         params.put("term", searchText);
         params.put("location_types", "airport");
 
-       ResponseEntity<String> response = restTemplate.exchange(
-                url, HttpMethod.GET, entity, String.class, params);
+        HttpEntity<String> response = restTemplate.exchange(
+                urlTemplate,
+                HttpMethod.GET,
+                entity,
+                String.class,
+                params);
+        return response;
 
-       return response;
 
 }
 //    public String searchAirports(String searchText) {
