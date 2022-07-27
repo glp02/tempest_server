@@ -37,7 +37,7 @@ public class FlightsService {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 //        headers.set("Accept-Encoding", "gzip");
-        headers.set("apikey","API_KEY_HERE");
+        headers.set("apikey","API_KEY_GOES_HERE");
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
         //BUILD URL WITH QUERY PARAMETERS
@@ -79,7 +79,7 @@ public class FlightsService {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 //        headers.set("Accept-Encoding", "gzip");
-        headers.set("apikey","API_KEY_HERE");
+        headers.set("apikey","API_KEY_GOES_HERE");
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
         //BUILD URL WITH QUERY PARAMETERS
@@ -114,19 +114,19 @@ public class FlightsService {
         JsonNode dataJSON = responseJSON.get("data");
         List<JsonNode> dataList = readJsonArrayToJsonNodeList.readValue(dataJSON);
 
-
         return dataList.stream().map((flightNode) -> new Flight(
                 flightNode.get("id").textValue(),
-                flightNode.get("route").get("flight_no").intValue(),
-                flightNode.get("route").get("local_departure").textValue(),
-                flightNode.get("route").get("local_arrival").textValue(),
+                flightNode.get("route").get(0).get("flight_no").intValue(),
+                flightNode.get("route").get(0).get("local_departure").textValue(),
+                flightNode.get("route").get(0).get("local_arrival").textValue(),
                 flightNode.get("duration").get("total").intValue(),
                 flightNode.get("flyFrom").textValue(),
                 flightNode.get("flyTo").textValue(),
                 flightNode.get("cityFrom").textValue(),
                 flightNode.get("cityTo").textValue(),
-                flightNode.get("route").get("airline").textValue()
+                flightNode.get("route").get(0).get("airline").textValue()
         )).collect(Collectors.toList());
+
     }
 }
 

@@ -1,6 +1,5 @@
 package com.sky.tempest_server.flights;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.sky.tempest_server.flights.entities.Airport;
 import com.sky.tempest_server.flights.entities.Flight;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +27,8 @@ public class FlightsController {
 
     @GetMapping("/flights/search-flights")
     public List<Flight> searchFlights(@RequestParam(name="flightDate") String flightDate,
-                                        @RequestParam(name="departureAirportCode") String departureAirportCode,
-                                        @RequestParam(name="arrivalAirportCode") String arrivalAirportCode) throws IOException {
+                                      @RequestParam(name="departureAirportCode") String departureAirportCode,
+                                      @RequestParam(name="arrivalAirportCode") String arrivalAirportCode) throws IOException {
         return this.service.searchFlights(flightDate, departureAirportCode, arrivalAirportCode);
     }
 
