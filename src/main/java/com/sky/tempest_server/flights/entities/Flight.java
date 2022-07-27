@@ -11,7 +11,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
-@Entity
+//@Entity
 @Table(name = "flights")
 @Data
 @NoArgsConstructor
@@ -21,26 +21,26 @@ public class Flight {
     //maybe use flight api unique id?
     @Id
     @NotNull
-    @Column(unique = true,nullable = false,name = "flight_id")
+   // @Column(unique = true,nullable = false,name = "flight_id")
     //@val not sure what this is?
-    private long id;
+    private String id;
 
     @NotNull
     @Column(nullable = false,name = "flight_number")
-    private int flightNumber;
+    private String flightNumber;
 
     //maybe will have to store as string?
     @NotNull
     @Column(nullable = false,name = "departure_date")
-    private Date departureDate;
+    private String departureDate;
 
     @NotNull
     @Column(nullable = false,name = "arrival_date")
-    private Date arrivalDate;
+    private String arrivalDate;
 
     @NotNull
     @Column(nullable = false,name = "duration")
-    private int duration;
+    private String duration;
 
     @NotNull
     @Column(nullable = false,name = "departure_airport_code")

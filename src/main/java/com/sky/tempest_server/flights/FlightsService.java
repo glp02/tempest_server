@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.sky.tempest_server.flights.entities.Airport;
 
+import com.sky.tempest_server.flights.entities.Flight;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
@@ -36,7 +37,7 @@ public class FlightsService {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 //        headers.set("Accept-Encoding", "gzip");
-        headers.set("apikey","API_KEY_GOES_HERE");
+        headers.set("apikey","VxTTadDfT5FeAq8LIvddlLs6LrwNk-aH");
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
         //BUILD URL WITH QUERY PARAMETERS
@@ -71,6 +72,61 @@ public class FlightsService {
                 locationNode.get("city").get("name").textValue(),
                 locationNode.get("city").get("country").get("name").textValue()
             )).collect(Collectors.toList());
+    }
+    public List<Flight> searchFlights(String flightDate, String departureAirportCode, String arrivalAirportCode) throws IOException {
+
+        //SET API KEY IN HEADER
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+//        headers.set("Accept-Encoding", "gzip");
+        headers.set("apikey","VxTTadDfT5FeAq8LIvddlLs6LrwNk-aH");
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+
+        //BUILD URL WITH QUERY PARAMETERS
+        String url = "https://tequila-api.kiwi.com/v2/search";
+        String urlTemplate = UriComponentsBuilder.fromHttpUrl(url)
+                .queryParam("date_from", flightDate)
+                .queryParam("date_to", flightDate)
+                .queryParam("fly_from", departureAirportCode)
+                .queryParam("fly_to", arrivalAirportCode)
+                .queryParam("max_stopovers", 0)
+                .encode()
+                .toUriString();
+
+        //GENERATE MAP OF PARAMETERS
+        Map<String, Object> params = new HashMap<>();
+        params.put("date_from", flightDate);
+        params.put("date_to", flightDate);
+        params.put("fly_from", departureAirportCode);
+        params.put("fly_to", arrivalAirportCode);
+        params.put("max_stopovers", 0);
+
+        //GET JSON RESPONSE AS STRING
+        HttpEntity<String> response = restTemplate.exchange(
+                urlTemplate,
+                HttpMethod.GET,
+                entity,
+                String.class,
+                params);
+
+        //MANIPULATE JSON RESPONSE
+        JsonNode responseJSON = mapper.readValue(response.getBody(), JsonNode.class);
+        JsonNode dataJSON = responseJSON.get("data");
+        List<JsonNode> dataList = readJsonArrayToJsonNodeList.readValue(dataJSON);
+
+
+        return dataList.stream().map((flightNode) -> new Flight(
+                flightNode.get("id").textValue(),
+                flightNode.get("route").get("flight_no").textValue(),
+                flightNode.get("route").get("local_departure").textValue(),
+                flightNode.get("route").get("local_arrival").textValue(),
+                flightNode.get("duration").get("total").textValue(),
+                flightNode.get("flyFrom").textValue(),
+                flightNode.get("flyTo").textValue(),
+                flightNode.get("cityFrom").textValue(),
+                flightNode.get("cityTo").textValue(),
+                flightNode.get("route").get("airline").textValue()
+        )).collect(Collectors.toList());
     }
 }
 
