@@ -1,5 +1,6 @@
 package com.sky.tempest_server.flights;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +15,8 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,13 +32,13 @@ public class FlightsService {
         this.restTemplate = restTemplateBuilder.build();
     }
 
-    public List<Airport> searchAirports(String searchText) {
+    public List<Airport> searchAirports(String searchText) throws IOException {
         String url = "https://tequila-api.kiwi.com/locations/query";
 
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 //        headers.set("Accept-Encoding", "gzip");
-        headers.set("apikey","APIKEYHERE");
+        headers.set("apikey","VxTTadDfT5FeAq8LIvddlLs6LrwNk-aH");
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
         String urlTemplate = UriComponentsBuilder.fromHttpUrl(url)
@@ -66,20 +69,6 @@ public class FlightsService {
 
         return airportList;
 
-
-        //        String url = "https://tequila-api.kiwi.com/locations/query?term={term}&location_types={locationTypes}";
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.set("apikey", System.getenv("VxTTadDfT5FeAq8LIvddlLs6LrwNk-aH"));
-//        HttpEntity<?> entity = new HttpEntity<>(headers);
-//
-//        //get response as a string
-//        ResponseEntity<String> response = restTemplate.exchange(
-//                url, HttpMethod.GET, entity, String.class, searchText, "airport");
-
-
         }
-//    public String searchAirports(String searchText) {
-//        String url = "https://jsonplaceholder.typicode.com/posts";
-//        return this.restTemplate.getForObject(url, String.class);
-//
+
     }
