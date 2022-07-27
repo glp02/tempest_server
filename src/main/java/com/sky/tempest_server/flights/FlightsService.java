@@ -23,8 +23,7 @@ import java.util.stream.Collectors;
 public class FlightsService {
     private final RestTemplate restTemplate;
     private final ObjectMapper mapper = new ObjectMapper();
-    private final ObjectReader readJsonArrayToJsonNodeList = mapper.readerFor(new TypeReference<List<JsonNode>>() {
-    });
+    private final ObjectReader readJsonArrayToJsonNodeList = mapper.readerFor(new TypeReference<List<JsonNode>>() {});
 
     @Autowired
     public FlightsService(RestTemplateBuilder restTemplateBuilder) {
