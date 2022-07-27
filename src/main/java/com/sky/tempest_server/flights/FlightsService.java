@@ -37,7 +37,7 @@ public class FlightsService {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 //        headers.set("Accept-Encoding", "gzip");
-        headers.set("apikey","VxTTadDfT5FeAq8LIvddlLs6LrwNk-aH");
+        headers.set("apikey","API_KEY_HERE");
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
         //BUILD URL WITH QUERY PARAMETERS
@@ -79,7 +79,7 @@ public class FlightsService {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 //        headers.set("Accept-Encoding", "gzip");
-        headers.set("apikey","VxTTadDfT5FeAq8LIvddlLs6LrwNk-aH");
+        headers.set("apikey","API_KEY_HERE");
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
         //BUILD URL WITH QUERY PARAMETERS
@@ -117,10 +117,10 @@ public class FlightsService {
 
         return dataList.stream().map((flightNode) -> new Flight(
                 flightNode.get("id").textValue(),
-                flightNode.get("route").get("flight_no").textValue(),
+                flightNode.get("route").get("flight_no").intValue(),
                 flightNode.get("route").get("local_departure").textValue(),
                 flightNode.get("route").get("local_arrival").textValue(),
-                flightNode.get("duration").get("total").textValue(),
+                flightNode.get("duration").get("total").intValue(),
                 flightNode.get("flyFrom").textValue(),
                 flightNode.get("flyTo").textValue(),
                 flightNode.get("cityFrom").textValue(),

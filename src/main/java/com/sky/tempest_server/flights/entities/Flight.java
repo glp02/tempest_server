@@ -27,7 +27,7 @@ public class Flight {
 
     @NotNull
     @Column(nullable = false,name = "flight_number")
-    private String flightNumber;
+    private int flightNumber;
 
     //maybe will have to store as string?
     @NotNull
@@ -40,7 +40,7 @@ public class Flight {
 
     @NotNull
     @Column(nullable = false,name = "duration")
-    private String duration;
+    private int duration;
 
     @NotNull
     @Column(nullable = false,name = "departure_airport_code")
