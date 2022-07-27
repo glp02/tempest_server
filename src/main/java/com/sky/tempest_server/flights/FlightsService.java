@@ -37,8 +37,7 @@ public class FlightsService {
     public List<Airport> searchAirports(String searchText) throws Exception {
         String url = "https://tequila-api.kiwi.com/locations/query?term={term}&location_types={locationTypes}";
         HttpHeaders headers = new HttpHeaders();
-        System.out.println(System.getenv("TEQUILA_API_KEY"));
-        headers.set("apikey", System.getenv("TEQUILA_API_KEY"));
+        headers.set("apikey", System.getenv("VxTTadDfT5FeAq8LIvddlLs6LrwNk-aH"));
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
         //get response as a string
