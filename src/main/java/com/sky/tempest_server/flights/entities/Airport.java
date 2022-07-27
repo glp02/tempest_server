@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Airport {
     String fullName;
-    String IATACode;
+    String iataCode;
 }
