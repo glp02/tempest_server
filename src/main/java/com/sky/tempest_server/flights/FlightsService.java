@@ -35,24 +35,28 @@ public class FlightsService {
     }
 
     public List<Airport> searchAirports(String searchText) throws IOException {
-        String url = "https://tequila-api.kiwi.com/locations/query";
 
+        //SET API KEY IN HEADER
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 //        headers.set("Accept-Encoding", "gzip");
         headers.set("apikey","API_KEY_GOES_HERE");
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
+        //BUILD URL WITH QUERY PARAMETERS
+        String url = "https://tequila-api.kiwi.com/locations/query";
         String urlTemplate = UriComponentsBuilder.fromHttpUrl(url)
                 .queryParam("term", searchText)
                 .queryParam("location_types", "airport")
                 .encode()
                 .toUriString();
 
+        //GENERATE MAP OF PARAMETERS
         Map<String, String> params = new HashMap<>();
         params.put("term", searchText);
         params.put("location_types", "airport");
 
+        //GET JSON RESPONSE AS STRING
         HttpEntity<String> response = restTemplate.exchange(
                 urlTemplate,
                 HttpMethod.GET,
@@ -60,6 +64,7 @@ public class FlightsService {
                 String.class,
                 params);
 
+        //MANIPULATE JSON RESPONSE
         JsonNode responseJSON = mapper.readValue(response.getBody(), JsonNode.class);
         JsonNode locationsJSON = responseJSON.get("locations");
         List<JsonNode> locationsList = readJsonArrayToJsonNodeList.readValue(locationsJSON);
