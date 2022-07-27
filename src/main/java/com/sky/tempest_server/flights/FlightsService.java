@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 public class FlightsService {
     private final RestTemplate restTemplate;
     private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectReader readJsonArrayToJsonNodeList = mapper.readerFor(new TypeReference<List<JsonNode>>() {
+    });
 
     @Autowired
     public FlightsService(RestTemplateBuilder restTemplateBuilder) {
@@ -38,7 +40,7 @@ public class FlightsService {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 //        headers.set("Accept-Encoding", "gzip");
-        headers.set("apikey","VxTTadDfT5FeAq8LIvddlLs6LrwNk-aH");
+        headers.set("apikey","API_KEY_GOES_HERE");
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
         String urlTemplate = UriComponentsBuilder.fromHttpUrl(url)
@@ -60,15 +62,15 @@ public class FlightsService {
 
         JsonNode responseJSON = mapper.readValue(response.getBody(), JsonNode.class);
         JsonNode locationsJSON = responseJSON.get("locations");
-        ObjectReader reader = mapper.readerFor(new TypeReference<List<JsonNode>>() {
-        });
-        List<JsonNode> locationsList = reader.readValue(locationsJSON);
-        List<Airport> airportList = locationsList.stream().map((locationNode) -> {
-            return new Airport(locationNode.get("name").textValue(), locationNode.get("code").textValue());
-        }).collect(Collectors.toList());
+        List<JsonNode> locationsList = readJsonArrayToJsonNodeList.readValue(locationsJSON);
+        List<Airport> airportList = locationsList.stream().map((locationNode) -> new Airport(
+                locationNode.get("name").textValue(),
+                locationNode.get("code").textValue(),
+                locationNode.get("city").get("name").textValue(),
+                locationNode.get("city").get("country").get("name").textValue()
+            )).collect(Collectors.toList());
 
         return airportList;
-
         }
 
     }

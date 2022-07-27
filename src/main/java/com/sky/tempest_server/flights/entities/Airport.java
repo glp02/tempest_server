@@ -10,4 +10,6 @@ import lombok.NoArgsConstructor;
 public class Airport {
     String fullName;
     String iataCode;
+    String city;
+    String country;
 }
