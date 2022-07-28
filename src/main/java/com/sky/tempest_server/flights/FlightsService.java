@@ -42,7 +42,6 @@ public class FlightsService {
         //SET API KEY IN HEADER
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-//        headers.set("Accept-Encoding", "gzip");
         headers.set("apikey",tequilaApiKey);
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
@@ -54,18 +53,12 @@ public class FlightsService {
                 .encode()
                 .toUriString();
 
-        //GENERATE MAP OF PARAMETERS
-        Map<String, String> params = new HashMap<>();
-        params.put("term", searchText);
-        params.put("location_types", "airport");
-
         //GET JSON RESPONSE AS STRING
         HttpEntity<String> response = restTemplate.exchange(
                 urlTemplate,
                 HttpMethod.GET,
                 entity,
-                String.class,
-                params);
+                String.class);
 
         //MANIPULATE JSON RESPONSE
         JsonNode responseJSON = mapper.readValue(response.getBody(), JsonNode.class);
@@ -84,7 +77,6 @@ public class FlightsService {
         //SET API KEY IN HEADER
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-//        headers.set("Accept-Encoding", "gzip");
         headers.set("apikey",tequilaApiKey);
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
@@ -99,21 +91,12 @@ public class FlightsService {
                 .encode()
                 .toUriString();
 
-        //GENERATE MAP OF PARAMETERS
-        Map<String, Object> params = new HashMap<>();
-        params.put("date_from", flightDate);
-        params.put("date_to", flightDate);
-        params.put("fly_from", departureAirportCode);
-        params.put("fly_to", arrivalAirportCode);
-        params.put("max_stopovers", 0);
-
         //GET JSON RESPONSE AS STRING
         HttpEntity<String> response = restTemplate.exchange(
                 urlTemplate,
                 HttpMethod.GET,
                 entity,
-                String.class,
-                params);
+                String.class);
 
         //MANIPULATE JSON RESPONSE
         JsonNode responseJSON = mapper.readValue(response.getBody(), JsonNode.class);
