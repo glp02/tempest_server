@@ -8,6 +8,7 @@ import com.sky.tempest_server.flights.entities.Airport;
 
 import com.sky.tempest_server.flights.entities.Flight;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -20,11 +21,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+
+
 @Service
 public class FlightsService {
     private final RestTemplate restTemplate;
     private final ObjectMapper mapper = new ObjectMapper();
     private final ObjectReader readJsonArrayToJsonNodeList = mapper.readerFor(new TypeReference<List<JsonNode>>() {});
+
+    @Value("${tequila.apikey}")
+    String tequilaApiKey;
 
     @Autowired
     public FlightsService(RestTemplateBuilder restTemplateBuilder) {
@@ -37,7 +43,7 @@ public class FlightsService {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 //        headers.set("Accept-Encoding", "gzip");
-        headers.set("apikey","API_KEY_GOES_HERE");
+        headers.set("apikey",tequilaApiKey);
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
         //BUILD URL WITH QUERY PARAMETERS
@@ -79,7 +85,7 @@ public class FlightsService {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 //        headers.set("Accept-Encoding", "gzip");
-        headers.set("apikey","API_KEY_GOES_HERE");
+        headers.set("apikey",tequilaApiKey);
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
         //BUILD URL WITH QUERY PARAMETERS
