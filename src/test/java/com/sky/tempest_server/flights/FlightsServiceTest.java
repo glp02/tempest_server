@@ -32,12 +32,7 @@ public class FlightsServiceTest {
         TequilaAPIService mockTequilaAPIService = mock(TequilaAPIService.class);
         String searchText = "text";
         FlightsService flightsService = new FlightsService(mockTequilaAPIService);
-        when(mockTequilaAPIService.getRequestResponse("?term="+searchText+"&location_types=airport",
-                new HashMap<String,String>(){{
-                    put("term", searchText);
-                    put("location_types", "airport");
-                }}
-        ))
+        when(mockTequilaAPIService.getRequestResponse("?term="+searchText+"&location_types=airport"))
                 .thenReturn(new HttpEntity<>(tequilaAirportSearchTestResponseJson));
 
         List<Airport> resultAirports = flightsService.searchAirports(searchText);

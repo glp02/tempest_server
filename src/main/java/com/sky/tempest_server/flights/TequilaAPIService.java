@@ -2,6 +2,7 @@ package com.sky.tempest_server.flights;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -14,7 +15,9 @@ import java.util.Map;
 @Service
 class TequilaAPIService {
     static final String TEQUILA_URL = "https://tequila-api.kiwi.com/locations/query";
-    private static final String TEQUILA_API_KEY = "API_KEY_HERE";
+
+    @Value("${tequila.apikey}")
+    String TEQUILA_API_KEY;
     
     private final RestTemplate restTemplate;
 
@@ -23,11 +26,9 @@ class TequilaAPIService {
         this.restTemplate = restTemplateBuilder.build();
     }
 
-
-    HttpEntity<String> getRequestResponse(String queryUrlParams, Map<String,String> uriVariables){
+    HttpEntity<String> getRequestResponse(String queryUrlParams){
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-//        headers.set("Accept-Encoding", "gzip");
         headers.set("apikey",TEQUILA_API_KEY);
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
@@ -36,8 +37,7 @@ class TequilaAPIService {
                 TEQUILA_URL +  queryUrlParams,
                 HttpMethod.GET,
                 entity,
-                String.class,
-                uriVariables);
+                String.class);
     }
     
 }

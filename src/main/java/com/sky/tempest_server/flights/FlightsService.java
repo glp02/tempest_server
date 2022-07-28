@@ -37,12 +37,9 @@ public class FlightsService {
                 .queryParam("location_types", "airport")
                 .encode()
                 .toUriString();
-        //GENERATE MAP OF PARAMETERS
-        Map<String, String> queryUriVariables = new HashMap<>();
-        queryUriVariables.put("term", searchText);
-        queryUriVariables.put("location_types", "airport");
 
-        HttpEntity<String> tequilaResponse = tequilaAPIService.getRequestResponse(queryUrlParams,queryUriVariables);
+        HttpEntity<String> tequilaResponse = tequilaAPIService.getRequestResponse(queryUrlParams);
+
         //MANIPULATE JSON RESPONSE
         JsonNode responseJSON = mapper.readValue(tequilaResponse.getBody(), JsonNode.class);
         JsonNode locationsJSON = responseJSON.get("locations");
