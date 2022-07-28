@@ -24,7 +24,7 @@ class TequilaAPIService {
     }
 
 
-    HttpEntity<String> getRequestResponse(String urlTemplate, Map<String,String> params){
+    HttpEntity<String> getRequestResponse(String queryUrlParams, Map<String,String> uriVariables){
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 //        headers.set("Accept-Encoding", "gzip");
@@ -33,11 +33,11 @@ class TequilaAPIService {
 
         //GET JSON RESPONSE AS STRING
         return restTemplate.exchange(
-                urlTemplate,
+                TEQUILA_URL +  queryUrlParams,
                 HttpMethod.GET,
                 entity,
                 String.class,
-                params);
+                uriVariables);
     }
     
 }

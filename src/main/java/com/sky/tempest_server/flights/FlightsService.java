@@ -23,25 +23,26 @@ public class FlightsService {
     private final ObjectReader readJsonArrayToJsonNodeList = mapper.readerFor(new TypeReference<List<JsonNode>>() {});
 
     @Autowired
-    private TequilaAPIService tequilaAPIService;
+    private final TequilaAPIService tequilaAPIService;
+
+    public FlightsService(TequilaAPIService tequilaAPIService) {
+        this.tequilaAPIService = tequilaAPIService;
+    }
 
     public List<Airport> searchAirports(String searchText) throws IOException {
 
         //BUILD URL WITH QUERY PARAMETERS
-        String urlTemplate = UriComponentsBuilder.fromHttpUrl(TequilaAPIService.TEQUILA_URL)
+        String queryUrlParams = UriComponentsBuilder.fromPath("")
                 .queryParam("term", searchText)
                 .queryParam("location_types", "airport")
                 .encode()
                 .toUriString();
-
         //GENERATE MAP OF PARAMETERS
-        Map<String, String> params = new HashMap<>();
-        params.put("term", searchText);
-        params.put("location_types", "airport");
+        Map<String, String> queryUriVariables = new HashMap<>();
+        queryUriVariables.put("term", searchText);
+        queryUriVariables.put("location_types", "airport");
 
-
-        HttpEntity<String> tequilaResponse = tequilaAPIService.getRequestResponse(urlTemplate,params);
-
+        HttpEntity<String> tequilaResponse = tequilaAPIService.getRequestResponse(queryUrlParams,queryUriVariables);
         //MANIPULATE JSON RESPONSE
         JsonNode responseJSON = mapper.readValue(tequilaResponse.getBody(), JsonNode.class);
         JsonNode locationsJSON = responseJSON.get("locations");
