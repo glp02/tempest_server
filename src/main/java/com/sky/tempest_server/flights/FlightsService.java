@@ -8,60 +8,41 @@ import com.sky.tempest_server.flights.entities.Airport;
 
 import com.sky.tempest_server.flights.entities.Flight;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-
-
 
 @Service
 public class FlightsService {
-    private final RestTemplate restTemplate;
     private final ObjectMapper mapper = new ObjectMapper();
     private final ObjectReader readJsonArrayToJsonNodeList = mapper.readerFor(new TypeReference<List<JsonNode>>() {});
 
-    @Value("${tequila.apikey}")
-    String tequilaApiKey;
+    static final String TEQUILA_LOCATIONS_ENDPOINT = "https://tequila-api.kiwi.com/locations/query";
+    static final String TEQUILA_FLIGHTS_ENDPOINT = "https://tequila-api.kiwi.com/v2/search";
 
     @Autowired
-    public FlightsService(RestTemplateBuilder restTemplateBuilder) {
-        this.restTemplate = restTemplateBuilder.build();
+    private final TequilaAPIService tequilaAPIService;
+
+    public FlightsService(TequilaAPIService tequilaAPIService) {
+        this.tequilaAPIService = tequilaAPIService;
     }
 
     public List<Airport> searchAirports(String searchText) throws IOException {
-
-        //SET API KEY IN HEADER
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-        headers.set("apikey",tequilaApiKey);
-        HttpEntity<?> entity = new HttpEntity<>(headers);
-
         //BUILD URL WITH QUERY PARAMETERS
-        String url = "https://tequila-api.kiwi.com/locations/query";
-        String urlTemplate = UriComponentsBuilder.fromHttpUrl(url)
+        String queryUrlParams = UriComponentsBuilder.fromPath("")
                 .queryParam("term", searchText)
                 .queryParam("location_types", "airport")
                 .encode()
                 .toUriString();
 
-        //GET JSON RESPONSE AS STRING
-        HttpEntity<String> response = restTemplate.exchange(
-                urlTemplate,
-                HttpMethod.GET,
-                entity,
-                String.class);
+        HttpEntity<String> tequilaResponse = tequilaAPIService.getRequestResponse(TEQUILA_LOCATIONS_ENDPOINT, queryUrlParams);
 
         //MANIPULATE JSON RESPONSE
-        JsonNode responseJSON = mapper.readValue(response.getBody(), JsonNode.class);
+        JsonNode responseJSON = mapper.readValue(tequilaResponse.getBody(), JsonNode.class);
         JsonNode locationsJSON = responseJSON.get("locations");
         List<JsonNode> locationsList = readJsonArrayToJsonNodeList.readValue(locationsJSON);
 
@@ -72,17 +53,11 @@ public class FlightsService {
                 locationNode.get("city").get("country").get("name").textValue()
             )).collect(Collectors.toList());
     }
+
+
     public List<Flight> searchFlights(String flightDate, String departureAirportCode, String arrivalAirportCode) throws IOException {
-
-        //SET API KEY IN HEADER
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-        headers.set("apikey",tequilaApiKey);
-        HttpEntity<?> entity = new HttpEntity<>(headers);
-
         //BUILD URL WITH QUERY PARAMETERS
-        String url = "https://tequila-api.kiwi.com/v2/search";
-        String urlTemplate = UriComponentsBuilder.fromHttpUrl(url)
+        String queryUrlParams = UriComponentsBuilder.fromPath("")
                 .queryParam("date_from", flightDate)
                 .queryParam("date_to", flightDate)
                 .queryParam("fly_from", departureAirportCode)
@@ -91,15 +66,10 @@ public class FlightsService {
                 .encode()
                 .toUriString();
 
-        //GET JSON RESPONSE AS STRING
-        HttpEntity<String> response = restTemplate.exchange(
-                urlTemplate,
-                HttpMethod.GET,
-                entity,
-                String.class);
+        HttpEntity<String> tequilaResponse = tequilaAPIService.getRequestResponse(TEQUILA_FLIGHTS_ENDPOINT, queryUrlParams);
 
         //MANIPULATE JSON RESPONSE
-        JsonNode responseJSON = mapper.readValue(response.getBody(), JsonNode.class);
+        JsonNode responseJSON = mapper.readValue(tequilaResponse.getBody(), JsonNode.class);
         JsonNode dataJSON = responseJSON.get("data");
         List<JsonNode> dataList = readJsonArrayToJsonNodeList.readValue(dataJSON);
 
@@ -115,7 +85,6 @@ public class FlightsService {
                 flightNode.get("cityTo").textValue(),
                 flightNode.get("route").get(0).get("airline").textValue()
         )).collect(Collectors.toList());
-
     }
 }
 
