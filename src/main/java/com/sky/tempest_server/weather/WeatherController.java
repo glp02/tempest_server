@@ -1,7 +1,8 @@
 package com.sky.tempest_server.weather;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sky.tempest_server.flights.FlightsService;
-import com.sky.tempest_server.flights.WeatherService;
+import com.sky.tempest_server.weather.WeatherService;
 import com.sky.tempest_server.flights.entities.Airport;
 import com.sky.tempest_server.flights.entities.Flight;
 import com.sky.tempest_server.weather.entities.WeatherDTO;
@@ -23,9 +24,9 @@ public class WeatherController {
     }
 
     @GetMapping("/weather")
-    public WeatherDTO getWeatherByLatLong(@RequestParam(name="latitude") double latitude,
-                                          @RequestParam(name="longitude") double longitude,
-                                          @RequestParam(name="datetime") String datetime) {
+    public JsonNode getWeatherByLatLong(@RequestParam(name="latitude") double latitude,
+                                        @RequestParam(name="longitude") double longitude,
+                                        @RequestParam(name="datetime") String datetime) throws IOException {
         return this.service.getWeatherByLatLong(latitude, longitude, datetime);
     }
 
