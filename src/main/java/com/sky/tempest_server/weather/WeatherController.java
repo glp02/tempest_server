@@ -26,8 +26,9 @@ public class WeatherController {
     @GetMapping("/weather")
     public JsonNode getWeatherByLatLong(@RequestParam(name="latitude") double latitude,
                                         @RequestParam(name="longitude") double longitude,
-                                        @RequestParam(name="datetime") String datetime) throws IOException {
-        return this.service.getWeatherByLatLong(latitude, longitude, datetime);
+                                        @RequestParam(name="dateTimeFrom") String dateTimeFrom,
+                                        @RequestParam(name="dateTimeTo") String dateTimeTo) throws IOException {
+        return this.service.getWeatherByLatLong(latitude, longitude, dateTimeFrom, dateTimeTo);
     }
 
 }

@@ -23,7 +23,7 @@ public class WeatherService {
     private final ObjectMapper mapper = new ObjectMapper();
     private final ObjectReader readJsonArrayToJsonNodeList = mapper.readerFor(new TypeReference<List<JsonNode>>() {});
 
-    static final String METEOMATICS_ENDPOINT = "api.meteomatics.com";
+    static final String METEOMATICS_ENDPOINT = "https://api.meteomatics.com";
 
     @Autowired
     private final MeteomaticsAPIService meteomaticsAPIService;
@@ -33,15 +33,25 @@ public class WeatherService {
     }
 
 
-    public JsonNode getWeatherByLatLong(double latitude, double longitude, String datetime) throws IOException {
-//    BUILD URL WITH QUERY PARAMETERS
-            String queryUrlParams = UriComponentsBuilder.fromPath("")
-                    .queryParam("term", "asdas")
-                    .queryParam("location_types", "airport")
-                    .encode()
-                    .toUriString();
-        String url = "https://api.meteomatics.com/" + datetime + "--2022-08-01T00:00:00Z:PT1H/t_2m:C,wind_speed_10m:ms/" + latitude + "," + longitude + "/json?model=mix";
-        HttpEntity<String> meteomaticsResponse = meteomaticsAPIService.getRequestResponse(url, queryUrlParams);
+    public JsonNode getWeatherByLatLong(double latitude, double longitude, String dateTimeFrom, String dateTimeTo) throws IOException {
+        Map<String, Object> uriVariables = new HashMap<>();
+        uriVariables.put("dateTimeTo", dateTimeTo);
+        uriVariables.put("dateTimeFrom", dateTimeFrom);
+        uriVariables.put("latitude", latitude);
+        uriVariables.put("longitude", longitude);
+
+        // BUILD URL + ENCODE
+        String queryUrlParams = UriComponentsBuilder.fromPath("")
+                .pathSegment("{dateTimeFrom}--{dateTimeTo}:PT1H")
+                .pathSegment("t_2m:C,wind_speed_10m:ms,weather_symbol_1h:idx")
+                .pathSegment("{latitude},{longitude}")
+                .pathSegment("json")
+                .queryParam("model", "mix")
+                .buildAndExpand(uriVariables)
+                .encode()
+                .toUriString();
+
+        HttpEntity<String> meteomaticsResponse = meteomaticsAPIService.getRequestResponse(METEOMATICS_ENDPOINT, queryUrlParams);
 
 
         //MANIPULATE JSON RESPONSE

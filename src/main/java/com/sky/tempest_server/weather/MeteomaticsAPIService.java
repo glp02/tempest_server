@@ -44,10 +44,10 @@ public class MeteomaticsAPIService {
         HttpHeaders headers = createHeaders(METEOMATICS_USERNAME, METEOMATICS_PASSWORD);
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
+        System.out.println(url + queryUrlParams);
         //GET JSON RESPONSE AS STRING
         return restTemplate.exchange(
-                url,
-//                url +  queryUrlParams,
+                url +  queryUrlParams,
                 HttpMethod.GET,
                 entity,
                 String.class);
