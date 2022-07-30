@@ -8,7 +8,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.sky.tempest_server.user.AuthenticationService;
+import com.sky.tempest_server.user.services.AuthenticationService;
 import com.sky.tempest_server.user.entities.Credentials;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 // this filter handles POST requests to the /login endpoint
 public class LoginFilter extends AbstractAuthenticationProcessingFilter{
 
-    public LoginFilter(String url, AuthenticationManager authManager) {
+    protected LoginFilter(String url, AuthenticationManager authManager) {
         super(new AntPathRequestMatcher(url));
         setAuthenticationManager(authManager);
     }
@@ -44,7 +44,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter{
                 new UsernamePasswordAuthenticationToken(
                         creds.getUsername(),
                         creds.getPassword(),
-                        Collections.emptyList()//AUTHORITIES
+                        Collections.emptyList()
                 )
         );
     }

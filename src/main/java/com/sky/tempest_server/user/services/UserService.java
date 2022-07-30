@@ -1,6 +1,8 @@
 package com.sky.tempest_server.user.services;
 import com.sky.tempest_server.user.UserRepository;
+import com.sky.tempest_server.user.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,10 +17,12 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        try{
-            return repository.findUserByEmail(username).get();
-        } catch (NoSuchElementException e) {
-            throw new UsernameNotFoundException("No user with email " + username + " was found.");
-        }
+        User currentUser = repository.findUserByEmail(username).get();
+        UserDetails user = new org.springframework.security.core
+                .userdetails.User(username, currentUser.getPassword()
+                , true, true, true, true,
+                AuthorityUtils.createAuthorityList(currentUser.getRole()));
+        return user;
     }
+
 }

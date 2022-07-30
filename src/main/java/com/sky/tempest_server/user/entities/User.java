@@ -4,21 +4,17 @@ package com.sky.tempest_server.user.entities;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.val;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.Collection;
-import java.util.Collections;
 
 @Entity
 @Table(name = "users")
 @Data
 @NoArgsConstructor
-public class User implements UserDetails {
+public class User{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,7 +42,7 @@ public class User implements UserDetails {
     private String password;
 
     @Column(nullable = false)
-    private UserRole role;
+    private String role;
 
     @Column(nullable = false)
     private boolean isAccountNonLocked = true;
@@ -60,33 +56,15 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private boolean isEnabled = true;
 
-
-
     public User(@NotBlank String email,
                 @NotBlank String firstName,
                 @NotBlank String lastName,
                 @NotBlank String password,
-                @NotBlank UserRole role) {
+                @NotBlank String role) {
         setEmail(email);
         setPassword(password);
         setFirstName(firstName);
         setLastName(lastName);
         setRole(role);
     }
-
-    public boolean passwordMatches(String attemptedPassword) {
-        return(this.getPassword().equals(attemptedPassword));
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(role);
-    }
-
-    @Override
-    public String getUsername() {
-        return getEmail();
-    }
-
-
 }
