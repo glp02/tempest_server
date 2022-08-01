@@ -39,7 +39,7 @@ public class FlightsController {
     }
 
     @GetMapping("/flights/search-flights")
-    public List<Flight> searchFlightsByAirport(@RequestParam(name="flightDate") String flightDate,
+    public List<Flight> searchFlights(@RequestParam(name="flightDate") String flightDate,
                                                @RequestParam(name = "departureLocationType") String departureLocationType,
                                                @RequestParam(name = "arrivalLocationType") String arrivalLocationType,
                                                @RequestParam(name="departureAirportCode") String departureAirportCode,
