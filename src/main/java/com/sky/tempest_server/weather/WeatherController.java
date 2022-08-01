@@ -26,7 +26,7 @@ public class WeatherController {
     }
 
     @GetMapping("/weather")
-    public List<Temperature>  getWeatherByLatLong(@RequestParam(name="latitude") double latitude,
+    public List<WeatherDTO> getWeatherByLatLong(@RequestParam(name="latitude") double latitude,
                                                   @RequestParam(name="longitude") double longitude,
                                                   @RequestParam(name="dateTimeFrom") String dateTimeFrom,
                                                   @RequestParam(name="dateTimeTo") String dateTimeTo) throws IOException {

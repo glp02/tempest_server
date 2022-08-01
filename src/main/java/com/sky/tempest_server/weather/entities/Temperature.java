@@ -10,7 +10,6 @@ import org.joda.time.DateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Temperature {
-    String dayOfYearISO;
     double minTemperature;
     double maxTemperature;
     double avgTemperature;

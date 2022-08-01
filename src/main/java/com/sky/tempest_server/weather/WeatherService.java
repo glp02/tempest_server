@@ -4,11 +4,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.sky.tempest_server.weather.entities.DateValue;
-import com.sky.tempest_server.weather.entities.Temperature;
+import com.sky.tempest_server.weather.entities.*;
+import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -29,8 +27,7 @@ public class WeatherService {
 
     static final String METEOMATICS_ENDPOINT = "https://api.meteomatics.com";
     DecimalFormat oneDecimalPlace = new DecimalFormat("#.#");
-    Map<DateTime, List<Double>> daysMapList = new LinkedHashMap<DateTime, List<Double>>();
-    List<Temperature> tempList = new ArrayList();
+
     @Autowired
     private final MeteomaticsAPIService meteomaticsAPIService;
 
@@ -49,7 +46,28 @@ public class WeatherService {
         return Double.parseDouble(oneDecimalPlace.format(average));
     }
 
-    public List<Temperature>  getWeatherByLatLong(double latitude, double longitude, String dateTimeFrom, String dateTimeTo) throws IOException {
+    public List<WeatherDTO>  getWeatherByLatLong(double latitude, double longitude, String dateTimeFrom, String dateTimeTo) throws IOException {
+
+        Map<DateTime, List<Double>> daysMapListTemp = new LinkedHashMap<DateTime, List<Double>>();
+        Map<DateTime, List<Double>> daysMapListPrecipitation = new LinkedHashMap<DateTime, List<Double>>();
+
+        List<Temperature> temperatureList = new ArrayList();
+        List<WeatherDTO.ProbOfPrecipitation> precipitationProbList = new ArrayList();
+        List<String> dateList = new ArrayList();
+
+
+        // Check that inputted dateFrom and dateTo falls within the 14 day forecasting period,
+        // if dateTo is not, then change dateTo parameter to range limit
+        // if dateFrom is not, then change
+        DateTime rangeLimit = new DateTime().plus(Period.days(14));
+        DateTime dateTimeFromDT = new DateTime(dateTimeFrom);
+        DateTime dateTimeToDT = new DateTime(dateTimeTo);
+        if(dateTimeFromDT.isAfter(rangeLimit)) {
+            return new ArrayList<>();
+        } else if (dateTimeToDT.isAfter(rangeLimit)) {
+            dateTimeTo = rangeLimit.toString(DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+        }
+
         Map<String, Object> uriVariables = new HashMap<>();
         uriVariables.put("dateTimeTo", dateTimeTo);
         uriVariables.put("dateTimeFrom", dateTimeFrom);
@@ -59,7 +77,7 @@ public class WeatherService {
         // BUILD URL + ENCODE
         String queryUrlParams = UriComponentsBuilder.fromPath("")
                 .pathSegment("{dateTimeFrom}--{dateTimeTo}:PT1H")
-                .pathSegment("t_2m:C,wind_speed_10m:ms,weather_symbol_1h:idx")
+                .pathSegment("t_2m:C,prob_precip_1h:p")
                 .pathSegment("{latitude},{longitude}")
                 .pathSegment("json")
                 .queryParam("model",  "mix")
@@ -74,29 +92,55 @@ public class WeatherService {
         JsonNode responseJSON = mapper.readValue(meteomaticsResponse.getBody(), JsonNode.class);
         JsonNode weatherJSON = responseJSON.get("data");
         JsonNode temperatureJSON = weatherJSON.get(0).get("coordinates").get(0).get("dates");
+        JsonNode precipitationJSON = weatherJSON.get(1).get("coordinates").get(0).get("dates");
 
-        List<JsonNode> temperatureList = readJsonArrayToJsonNodeList.readValue(temperatureJSON);
-        List<DateValue> dateValueList = temperatureList.stream().map((dateValueNode) -> new DateValue(
+        populateMapLists(temperatureJSON, daysMapListTemp);
+        populateMapLists(precipitationJSON, daysMapListPrecipitation);
+
+        // iterates through linked hash map and creates temperature object with the respective day's max, min, average
+        for (Map.Entry<DateTime, List<Double>> mapEntry : daysMapListTemp.entrySet()) {
+            DateTime specificDay = mapEntry.getKey();
+            String dayOfYearISO = specificDay.toString(DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")); // sets to string ISO 8601 format
+            List<Double> tempValues = mapEntry.getValue();
+            dateList.add(dayOfYearISO);
+            temperatureList.add(new Temperature(Collections.min(tempValues),Collections.max(tempValues),getAverage(tempValues)));
+        }
+        // iterates through linked hash map and creates temperature object with the respective day's max, min, average
+        for (Map.Entry<DateTime, List<Double>> mapEntry : daysMapListPrecipitation.entrySet()) {
+            DateTime specificDay = mapEntry.getKey();
+            String dayOfYearISO = specificDay.toString(DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")); // sets to string ISO 8601 format
+            List<Double> precipitationValues = mapEntry.getValue();
+            WeatherDTO.ProbOfPrecipitation lowMediumHigh;
+            double precipitationAveragePercent = getAverage(precipitationValues);
+            if(precipitationAveragePercent >= 50) {
+                lowMediumHigh = WeatherDTO.ProbOfPrecipitation.HIGH;
+            } else if(precipitationAveragePercent >= 30) {
+                lowMediumHigh = WeatherDTO.ProbOfPrecipitation.MEDIUM;
+            } else {
+                lowMediumHigh = WeatherDTO.ProbOfPrecipitation.LOW;
+            }
+            precipitationProbList.add(lowMediumHigh);
+        }
+        List<WeatherDTO> weatherDTOList = new ArrayList<WeatherDTO>();
+        for(int i = 0; i < temperatureList.size(); i++) {
+            weatherDTOList.add(new WeatherDTO(dateList.get(i),temperatureList.get(i),precipitationProbList.get(i)));
+        }
+        return weatherDTOList;
+    }
+
+    private void populateMapLists(JsonNode jsonNode, Map<DateTime, List<Double>> daysMapList) throws IOException {
+        List<JsonNode> jsonNodeList = readJsonArrayToJsonNodeList.readValue(jsonNode);
+        List<DateValue> dateValueList = jsonNodeList.stream().map((dateValueNode) -> new DateValue(
                 dateValueNode.get("date").textValue(),
                 dateValueNode.get("value").doubleValue()
         )).collect(Collectors.toList());
 
-        // populate daysMapList with { datetime of that day, [list of temperatures for that day] }
+        // populate daysMapList with { datetime of that day, [list of temperatures/precipitation for that day] }
         for (DateValue dateValue : dateValueList) {
             DateTime currDate = new DateTime(dateValue.getDate()).withTimeAtStartOfDay();
             daysMapList.putIfAbsent(currDate, new ArrayList<Double>());
             daysMapList.get(currDate).add(dateValue.getValue());
         }
-
-        // iterates through linked hash map and creates temperature object with the respective day's max, min, average
-        for (Map.Entry<DateTime, List<Double>> mapEntry : daysMapList.entrySet()) {
-            DateTime key = mapEntry.getKey();
-            String dayOfYearISO = key.toString(DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")); // sets to string ISO 8601 format
-            List<Double> tempValues = mapEntry.getValue();
-            tempList.add(new Temperature(dayOfYearISO,Collections.min(tempValues),Collections.max(tempValues),getAverage(tempValues)));
-        }
-        System.out.println(tempList);
-        return tempList;
     }
 }
 
