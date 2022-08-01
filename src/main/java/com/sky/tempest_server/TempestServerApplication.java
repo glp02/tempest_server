@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 public class TempestServerApplication {
-
 	@Autowired
 	private UserRepository user_repository;
 
