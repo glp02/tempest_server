@@ -40,13 +40,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
+                //specifies request paths to allow general access too (anonymous)
                 .antMatchers(HttpMethod.POST,"/login","/register").anonymous()
                 .antMatchers(HttpMethod.GET,"/flights/search-airports",
                         "/flights/search-cities",
                         "/flights/search-locations").anonymous()
                 .anyRequest().authenticated()
                 .and()
-                // Filter for the api/login requests
+                // Filter for the login requests
                 .addFilterBefore(new LoginFilter("/login", authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 // Filter for other requests to check JWT in header
                 .addFilterBefore(new AuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
