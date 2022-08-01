@@ -41,6 +41,4 @@ public class FlightsServiceTest {
         assertEquals(new Airport("London Stansted","STN","London","United Kingdom"),resultAirports.get(1));
         assertEquals(new Airport("Heathrow","LHR","London","United Kingdom"),resultAirports.get(2));
     }
-
-
 }
