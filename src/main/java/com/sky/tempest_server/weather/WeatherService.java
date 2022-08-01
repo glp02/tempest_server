@@ -49,11 +49,13 @@ public class WeatherService {
     public List<WeatherDTO>  getWeatherByLatLong(double latitude, double longitude, String dateTimeFrom, String dateTimeTo) throws IOException {
 
         Map<DateTime, List<Double>> daysMapListTemp = new LinkedHashMap<DateTime, List<Double>>();
-        Map<DateTime, List<Double>> daysMapListPrecipitation = new LinkedHashMap<DateTime, List<Double>>();
+        Map<DateTime, List<Double>> daysMapListWeatherSymbol = new LinkedHashMap<DateTime, List<Double>>();
+
 
         List<Temperature> temperatureList = new ArrayList();
-        List<WeatherDTO.ProbOfPrecipitation> precipitationProbList = new ArrayList();
+        List<WeatherSymbol> weatherSymbolList = new ArrayList();
         List<String> dateList = new ArrayList();
+//        List<WeatherSymbol> returnedWeatherSymbolList = new ArrayList();
 
 
         // Check that inputted dateFrom and dateTo falls within the 14 day forecasting period,
@@ -77,7 +79,7 @@ public class WeatherService {
         // BUILD URL + ENCODE
         String queryUrlParams = UriComponentsBuilder.fromPath("")
                 .pathSegment("{dateTimeFrom}--{dateTimeTo}:PT1H")
-                .pathSegment("t_2m:C,prob_precip_1h:p")
+                .pathSegment("t_2m:C,weather_symbol_1h:idx")
                 .pathSegment("{latitude},{longitude}")
                 .pathSegment("json")
                 .queryParam("model",  "mix")
@@ -92,10 +94,10 @@ public class WeatherService {
         JsonNode responseJSON = mapper.readValue(meteomaticsResponse.getBody(), JsonNode.class);
         JsonNode weatherJSON = responseJSON.get("data");
         JsonNode temperatureJSON = weatherJSON.get(0).get("coordinates").get(0).get("dates");
-        JsonNode precipitationJSON = weatherJSON.get(1).get("coordinates").get(0).get("dates");
+        JsonNode weatherSymbolJSON = weatherJSON.get(1).get("coordinates").get(0).get("dates");
 
         populateMapLists(temperatureJSON, daysMapListTemp);
-        populateMapLists(precipitationJSON, daysMapListPrecipitation);
+        populateMapLists(weatherSymbolJSON, daysMapListWeatherSymbol);
 
         // iterates through linked hash map and creates temperature object with the respective day's max, min, average
         for (Map.Entry<DateTime, List<Double>> mapEntry : daysMapListTemp.entrySet()) {
@@ -106,26 +108,61 @@ public class WeatherService {
             temperatureList.add(new Temperature(Collections.min(tempValues),Collections.max(tempValues),getAverage(tempValues)));
         }
         // iterates through linked hash map and creates temperature object with the respective day's max, min, average
-        for (Map.Entry<DateTime, List<Double>> mapEntry : daysMapListPrecipitation.entrySet()) {
+        for (Map.Entry<DateTime, List<Double>> mapEntry : daysMapListWeatherSymbol.entrySet()) {
             DateTime specificDay = mapEntry.getKey();
             String dayOfYearISO = specificDay.toString(DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")); // sets to string ISO 8601 format
-            List<Double> precipitationValues = mapEntry.getValue();
-            WeatherDTO.ProbOfPrecipitation lowMediumHigh;
-            double precipitationAveragePercent = getAverage(precipitationValues);
-            if(precipitationAveragePercent >= 50) {
-                lowMediumHigh = WeatherDTO.ProbOfPrecipitation.HIGH;
-            } else if(precipitationAveragePercent >= 30) {
-                lowMediumHigh = WeatherDTO.ProbOfPrecipitation.MEDIUM;
-            } else {
-                lowMediumHigh = WeatherDTO.ProbOfPrecipitation.LOW;
-            }
-            precipitationProbList.add(lowMediumHigh);
-        }
+            List<Double> weatherSymbolValues = mapEntry.getValue();
+            weatherSymbolList.add(getMode(weatherSymbolValues));
+        };
         List<WeatherDTO> weatherDTOList = new ArrayList<WeatherDTO>();
         for(int i = 0; i < temperatureList.size(); i++) {
-            weatherDTOList.add(new WeatherDTO(dateList.get(i),temperatureList.get(i),precipitationProbList.get(i)));
+            weatherDTOList.add(new WeatherDTO(dateList.get(i),temperatureList.get(i),weatherSymbolList.get(i)));
         }
         return weatherDTOList;
+    }
+
+    private final WeatherSymbol getMode(List<Double> weatherSymbolValues) {
+        List<Double> dayWeatherSymbolValues = new ArrayList<>();
+        Map<Integer, String> weatherSymbolDictionary = new HashMap<>();
+        weatherSymbolDictionary.put(1,"Clear sky");
+        weatherSymbolDictionary.put(2,"Light clouds");
+        weatherSymbolDictionary.put(3,"Partly cloudy");
+        weatherSymbolDictionary.put(4,"Cloudy");
+        weatherSymbolDictionary.put(5,"Rain");
+        weatherSymbolDictionary.put(6,"Rain and snow");
+        weatherSymbolDictionary.put(7,"Snow");
+        weatherSymbolDictionary.put(8,"Rain shower");
+        weatherSymbolDictionary.put(9,"Snow shower");
+        weatherSymbolDictionary.put(10,"Sleet shower");
+        weatherSymbolDictionary.put(11,"Light fog");
+        weatherSymbolDictionary.put(12,"Dense fog");
+        weatherSymbolDictionary.put(13,"Freezing rain");
+        weatherSymbolDictionary.put(14,"Thunderstorms");
+        weatherSymbolDictionary.put(15,"Drizzle");
+        weatherSymbolDictionary.put(16,"Sandstorm");
+
+        for (double weatherSymbol: weatherSymbolValues) {
+            if (Double.compare(weatherSymbol, 100d)<0) {
+                dayWeatherSymbolValues.add(weatherSymbol);
+            }
+        }
+            int maxValue = 0, maxCount = 0;
+
+            for (int i = 0; i < dayWeatherSymbolValues.size(); ++i)
+            {
+                int count = 0;
+                for (int j = 0; j < dayWeatherSymbolValues.size(); ++j)
+                {
+                    if (dayWeatherSymbolValues.get(j) == dayWeatherSymbolValues.get(i))
+                        ++count;
+                }
+                if (count > maxCount)
+                {
+                    maxCount = count;
+                    maxValue = dayWeatherSymbolValues.get(i).intValue();
+                }
+            }
+            return new WeatherSymbol(maxValue, weatherSymbolDictionary.get(maxValue));
     }
 
     private void populateMapLists(JsonNode jsonNode, Map<DateTime, List<Double>> daysMapList) throws IOException {
