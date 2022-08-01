@@ -7,7 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Location {
+public abstract class Location {
+
     enum LocationType {
         CITY,
         AIRPORT

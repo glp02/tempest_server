@@ -1,10 +1,10 @@
 package com.sky.tempest_server.flights.entities;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
+@Getter @Setter
 public class Airport extends Location{
 
     private String iataCode;
@@ -18,6 +18,16 @@ public class Airport extends Location{
         super(name, country, LocationType.AIRPORT);
         this.city = city;
         this.iataCode =iataCode;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(o instanceof Airport) {
+            Airport airport = ((Airport) o);
+            return super.equals(airport)
+                    && (this.getIataCode()).equals(airport.getIataCode())
+                    && (this.getCity()).equals(airport.getCity());
+        } else return false;
     }
 
 }
