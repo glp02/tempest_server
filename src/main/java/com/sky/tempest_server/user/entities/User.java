@@ -6,9 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.val;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
 
 @Entity
 @Table(name = "users")
@@ -25,15 +23,19 @@ public class User{
     private long id;
 
     @NotNull
-    @Email
+    @Email(message = "Email should be valid")
     @Column(unique = true,nullable = false, name = "user_email")
     private @NotBlank String email;
 
     @Column(nullable = false, name = "user_first_name")
+    @Size(min=1,max=25)
+    @Pattern(regexp = "^[A-Za-z]+((\\s)?((\\'|\\-|\\.)?([A-Za-z])+))*$")
     @NotBlank
     private String firstName;
 
     @Column(nullable = false, name = "user_last_name")
+    @Size(min=1,max=25)
+    @Pattern(regexp = "^[A-Za-z]+((\\s)?((\\'|\\-|\\.)?([A-Za-z])+))*$")
     @NotBlank
     private String lastName;
 
@@ -43,18 +45,6 @@ public class User{
 
     @Column(nullable = false)
     private String role;
-
-    @Column(nullable = false)
-    private boolean isAccountNonLocked = true;
-
-    @Column(nullable = false)
-    private boolean isAccountNonExpired = true;
-
-    @Column(nullable = false)
-    private boolean isCredentialsNonExpired = true;
-
-    @Column(nullable = false)
-    private boolean isEnabled = true;
 
     public User(@NotBlank String email,
                 @NotBlank String firstName,
@@ -67,4 +57,9 @@ public class User{
         setLastName(lastName);
         setRole(role);
     }
+
+    public UserDTO getDTO(){
+        return new UserDTO(this);
+    }
+
 }
