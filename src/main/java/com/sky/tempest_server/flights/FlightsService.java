@@ -6,13 +6,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.sky.tempest_server.flights.entities.Airport;
 
+import com.sky.tempest_server.flights.entities.City;
 import com.sky.tempest_server.flights.entities.Flight;
+import com.sky.tempest_server.flights.entities.Location;
+import com.sky.tempest_server.flights.exceptions.InvalidLocationTypeException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,11 +36,11 @@ public class FlightsService {
         this.tequilaAPIService = tequilaAPIService;
     }
 
-    public List<Airport> searchAirports(String searchText) throws IOException {
+    public List<Location> searchLocations(String locationType, String searchText) throws Exception {
         //BUILD URL WITH QUERY PARAMETERS
         String queryUrlParams = UriComponentsBuilder.fromPath("")
                 .queryParam("term", searchText)
-                .queryParam("location_types", "airport")
+                .queryParam("location_types", locationType)
                 .encode()
                 .toUriString();
 
@@ -46,22 +51,44 @@ public class FlightsService {
         JsonNode locationsJSON = responseJSON.get("locations");
         List<JsonNode> locationsList = readJsonArrayToJsonNodeList.readValue(locationsJSON);
 
-        return locationsList.stream().map((locationNode) -> new Airport(
-                locationNode.get("name").textValue(),
-                locationNode.get("code").textValue(),
-                locationNode.get("city").get("name").textValue(),
-                locationNode.get("city").get("country").get("name").textValue()
+        if(locationType.equals("city")) {
+            return locationsList.stream().map((locationNode) -> new City(
+                    locationNode.get("name").textValue(),
+                    locationNode.get("country").get("name").textValue(),
+                    locationNode.get("code").textValue()
+            )).filter(city -> (city.getCityCode() != null)).collect(Collectors.toList());
+        }
+        if(locationType.equals("airport")) {
+            return locationsList.stream().map((locationNode) -> new Airport(
+                    locationNode.get("name").textValue(),
+                    locationNode.get("city").get("country").get("name").textValue(),
+                    locationNode.get("city").get("name").textValue(),
+                    locationNode.get("code").textValue()
             )).collect(Collectors.toList());
+        }
+        else throw new InvalidLocationTypeException();
     }
 
+    public List<Flight> searchFlights(String flightDate,
+                                      String departureLocationType,
+                                      String departureAirportCode,
+                                      String arrivalLocationType,
+                                      String arrivalAirportCode) throws Exception {
 
-    public List<Flight> searchFlights(String flightDate, String departureAirportCode, String arrivalAirportCode) throws IOException {
+        //CHECK LOCATION TYPES ARE VALID
+        boolean departureLocationTypeInvalid = !departureLocationType.equals("city") && !departureLocationType.equals("airport");
+        boolean arrivalLocationTypeInvalid = !arrivalLocationType.equals("city") && !arrivalLocationType.equals("airport");
+        if (departureLocationTypeInvalid || arrivalLocationTypeInvalid) {
+            throw new InvalidLocationTypeException();
+        }
+
+
         //BUILD URL WITH QUERY PARAMETERS
         String queryUrlParams = UriComponentsBuilder.fromPath("")
                 .queryParam("date_from", flightDate)
                 .queryParam("date_to", flightDate)
-                .queryParam("fly_from", departureAirportCode)
-                .queryParam("fly_to", arrivalAirportCode)
+                .queryParam("fly_from", departureLocationType+":"+departureAirportCode)
+                .queryParam("fly_to", arrivalLocationType+":"+arrivalAirportCode)
                 .queryParam("max_stopovers", 0)
                 .encode()
                 .toUriString();
@@ -86,5 +113,10 @@ public class FlightsService {
                 flightNode.get("route").get(0).get("airline").textValue()
         )).collect(Collectors.toList());
     }
+
+
+
+
+
 }
 
