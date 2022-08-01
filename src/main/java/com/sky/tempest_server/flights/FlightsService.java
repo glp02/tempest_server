@@ -9,6 +9,7 @@ import com.sky.tempest_server.flights.entities.Airport;
 import com.sky.tempest_server.flights.entities.City;
 import com.sky.tempest_server.flights.entities.Flight;
 import com.sky.tempest_server.flights.entities.Location;
+import com.sky.tempest_server.flights.exceptions.InvalidLocationTypeException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,7 +36,7 @@ public class FlightsService {
         this.tequilaAPIService = tequilaAPIService;
     }
 
-    public List<Location> searchLocations(String locationType, String searchText) throws IOException {
+    public List<Location> searchLocations(String locationType, String searchText) throws Exception {
         //BUILD URL WITH QUERY PARAMETERS
         String queryUrlParams = UriComponentsBuilder.fromPath("")
                 .queryParam("term", searchText)
@@ -64,16 +66,29 @@ public class FlightsService {
                     locationNode.get("code").textValue()
             )).collect(Collectors.toList());
         }
-        else return new ArrayList<>();
+        else throw new InvalidLocationTypeException();
     }
 
-    public List<Flight> searchFlights(String locationType, String flightDate, String departureAirportCode, String arrivalAirportCode) throws IOException {
+    public List<Flight> searchFlights(String flightDate,
+                                      String departureLocationType,
+                                      String departureAirportCode,
+                                      String arrivalLocationType,
+                                      String arrivalAirportCode) throws Exception {
+
+        //CHECK LOCATION TYPES ARE VALID
+        boolean departureLocationTypeInvalid = !departureLocationType.equals("city") && !departureLocationType.equals("airport");
+        boolean arrivalLocationTypeInvalid = !arrivalLocationType.equals("city") && !arrivalLocationType.equals("airport");
+        if (departureLocationTypeInvalid || arrivalLocationTypeInvalid) {
+            throw new InvalidLocationTypeException();
+        }
+
+
         //BUILD URL WITH QUERY PARAMETERS
         String queryUrlParams = UriComponentsBuilder.fromPath("")
                 .queryParam("date_from", flightDate)
                 .queryParam("date_to", flightDate)
-                .queryParam("fly_from", locationType+":"+departureAirportCode)
-                .queryParam("fly_to", locationType+":"+arrivalAirportCode)
+                .queryParam("fly_from", departureLocationType+":"+departureAirportCode)
+                .queryParam("fly_to", arrivalLocationType+":"+arrivalAirportCode)
                 .queryParam("max_stopovers", 0)
                 .encode()
                 .toUriString();
