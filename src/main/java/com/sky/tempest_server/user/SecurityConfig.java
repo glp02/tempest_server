@@ -5,7 +5,6 @@ import java.util.Arrays;
 
 import com.sky.tempest_server.user.filters.AuthenticationFilter;
 import com.sky.tempest_server.user.filters.LoginFilter;
-import com.sky.tempest_server.user.services.MyUserDetailsService;
 import com.sky.tempest_server.user.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -30,11 +29,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig extends WebSecurityConfigurerAdapter{
 
     @Autowired
-    private MyUserDetailsService userDetailsService;
+    private UserService userService;
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService)
+        auth.userDetailsService(userService)
                 .passwordEncoder(UserService.ENCODER);
     }
 

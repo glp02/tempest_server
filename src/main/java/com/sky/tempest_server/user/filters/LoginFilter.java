@@ -4,12 +4,11 @@ import java.io.IOException;
 import java.util.Collections;
 
 import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.sky.tempest_server.user.services.AuthenticationService;
-import com.sky.tempest_server.user.entities.UserCredentials;
+import lombok.Data;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -35,8 +34,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter{
     // which must be implemented by subclasses.
     @Override
     public Authentication attemptAuthentication( HttpServletRequest req, HttpServletResponse res)
-            throws AuthenticationException, IOException, ServletException
-    {
+            throws AuthenticationException, IOException {
         // reads the input stream and creates our AccountCredentials object from the values
         UserCredentials creds = new ObjectMapper()
                 .readValue(req.getInputStream(), UserCredentials.class);
@@ -53,9 +51,16 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter{
     // we override to call our addToken method so the token is returned in the response
     @Override
     protected void successfulAuthentication(HttpServletRequest req, HttpServletResponse res, FilterChain chain,
-                                            Authentication auth) throws IOException, ServletException {
+                                            Authentication auth) {
         AuthenticationService.addToken(res, auth.getName()); // our addToken code from our Auth service
     }
+
+    @Data
+    private static class UserCredentials {
+        private String username;
+        private String password;
+    }
+
 
 
 }

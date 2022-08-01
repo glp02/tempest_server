@@ -10,6 +10,10 @@ import com.sky.tempest_server.user.exceptions.RegistrationException;
 import com.sky.tempest_server.user.repositories.UserRepository;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -19,7 +23,7 @@ import java.util.List;
 import static com.sky.tempest_server.user.services.AuthenticationService.SIGNING_KEY;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
 
     public static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
@@ -32,7 +36,7 @@ public class UserService {
     private final ObjectReader readJsonArrayToJsonNodeList = mapper.readerFor(new TypeReference<List<JsonNode>>() {
     });
 
-    public String register(String body) {
+    public String register(String body) throws RegistrationException {
         try {
             JsonNode responseJSON = mapper.readValue(body, JsonNode.class);
             String email = responseJSON.get("email").textValue();
@@ -59,8 +63,16 @@ public class UserService {
                     .parseClaimsJws(token.replace(PREFIX, ""))
                     .getBody()
                     .getSubject();
-            return new UserDTO(repository.findUserByEmail(userEmail).get());
+            return repository.findUserByEmail(userEmail).get().getDTO();
         } else return null;
+    }
+
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User currentUser = repository.findUserByEmail(username).get();
+        return new org.springframework.security.core
+                .userdetails.User(username, currentUser.getPassword()
+                , true, true, true, true,
+                AuthorityUtils.createAuthorityList(currentUser.getRole()));
     }
 
 }
