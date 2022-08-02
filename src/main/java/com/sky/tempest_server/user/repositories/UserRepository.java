@@ -1,4 +1,4 @@
-package com.sky.tempest_server.user;
+package com.sky.tempest_server.user.repositories;
 
 import com.sky.tempest_server.user.entities.User;
 import org.springframework.data.repository.CrudRepository;
