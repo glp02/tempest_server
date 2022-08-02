@@ -82,7 +82,6 @@ public class FlightsService {
             throw new InvalidLocationTypeException();
         }
 
-
         //BUILD URL WITH QUERY PARAMETERS
         String queryUrlParams = UriComponentsBuilder.fromPath("")
                 .queryParam("date_from", flightDate)
@@ -113,10 +112,6 @@ public class FlightsService {
                 flightNode.get("route").get(0).get("airline").textValue()
         )).collect(Collectors.toList());
     }
-
-
-
-
 
 }
 

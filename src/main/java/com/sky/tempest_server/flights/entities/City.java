@@ -1,12 +1,8 @@
 package com.sky.tempest_server.flights.entities;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
+@Getter @Setter
 public class City extends Location {
     private String cityCode;
 
@@ -17,6 +13,14 @@ public class City extends Location {
     public City(String name, String country, String cityCode) {
         super(name, country, LocationType.CITY);
         this.cityCode = cityCode;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(o instanceof City) {
+            City city = ((City) o);
+            return super.equals(city) && (this.getCityCode()).equals(city.getCityCode());
+        } else return false;
     }
 
 }
