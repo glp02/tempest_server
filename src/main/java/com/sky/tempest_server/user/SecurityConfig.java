@@ -44,7 +44,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
                 .antMatchers(HttpMethod.POST,"/login","/register").anonymous()
                 .antMatchers(HttpMethod.GET,"/flights/search-airports",
                         "/flights/search-cities",
-                        "/flights/search-locations").anonymous()
+                        "/flights/search-locations",
+                        "/flights/search-flights").anonymous()
                 .anyRequest().authenticated()
                 .and()
                 // Filter for the login requests
