@@ -102,7 +102,7 @@ public class FlightsServiceTest {
         when(mockTequilaAPIService.getRequestResponse("https://tequila-api.kiwi.com/v2/search", testQueryParams))
                 .thenReturn(new HttpEntity<>(testFlightSearchJsonResponse));
 
-        List<Flight> resultFlights = flightsService.searchFlights(testDate, "city", flyFrom, "city", flyTo);
+        List<Flight> resultFlights = flightsService.searchFlights(testDate, locationType, flyFrom, locationType, flyTo);
 
         assertEquals(new Flight("testId", 0, "testDepartureDate", "testArrivalDate", 1000, "testDepartureAirportCode", "testArrivalAirportCode", "testDepartureCity", "testArrivalCity", "testAirline" ),resultFlights.get(0));
     }
