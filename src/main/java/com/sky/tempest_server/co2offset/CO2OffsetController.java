@@ -1,5 +1,4 @@
 package com.sky.tempest_server.co2offset;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.sky.tempest_server.co2offset.entities.CO2Offset;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,5 +22,4 @@ public class CO2OffsetController {
                                                @RequestParam(name="cabinClass") String cabinClass) throws IOException {
         return this.service.getCO2OffsetByAirportCodes(airportCodeFrom, airportCodeTo, cabinClass);
     }
-
 }
