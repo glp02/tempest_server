@@ -118,8 +118,6 @@ public class FlightsServiceTest {
         int maxStopovers = 0;
         String testQueryParams = "?date_from="+testDate+"&date_to="+testDate+"&fly_from="+invalidLocationType+":"+flyFrom+"&fly_to="+invalidLocationType+":"+flyTo+"&max_stopovers="+maxStopovers;
         FlightsService flightsService = new FlightsService(mockTequilaAPIService);
-        when(mockTequilaAPIService.getRequestResponse("https://tequila-api.kiwi.com/v2/search", testQueryParams))
-                .thenReturn(new HttpEntity<>(testFlightSearchJsonResponse));
 
         assertThrows(InvalidLocationTypeException.class, ()->{
             flightsService.searchFlights(testDate, invalidLocationType, flyFrom, invalidLocationType, flyTo);
