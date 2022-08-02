@@ -1,15 +1,23 @@
 package com.sky.tempest_server.flights.entities;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class Airport {
-    String fullName;
-    String iataCode;
-    String city;
-    String country;
+@EqualsAndHashCode(callSuper = true)
+public class Airport extends Location{
+
+    private String iataCode;
+    private String city;
+
+    public Airport() {
+        super();
+    }
+
+    public Airport(String name, String country,String city, String iataCode) {
+        super(name, country, LocationType.AIRPORT);
+        this.city = city;
+        this.iataCode =iataCode;
+    }
+
 }
