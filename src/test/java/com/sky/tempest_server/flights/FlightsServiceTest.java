@@ -1,6 +1,8 @@
 package com.sky.tempest_server.flights;
 
 import com.sky.tempest_server.flights.entities.Airport;
+import com.sky.tempest_server.flights.services.FlightsService;
+import com.sky.tempest_server.flights.services.TequilaAPIService;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -9,7 +11,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpEntity;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
