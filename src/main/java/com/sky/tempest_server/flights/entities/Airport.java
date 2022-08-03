@@ -36,16 +36,27 @@ public class Airport extends Location implements Serializable {
     @Column(nullable = false, name = "longitude")
     private double longitude;
 
+    @Column(nullable = false,name = "location_type")
+    LocationType locationType;
+
+    @Column(nullable = false, name = "airport_name")
+    String name;
+
+    @Column(nullable = false, name = "country")
+    String country;
+
     public Airport() {
         super();
     }
 
     public Airport(String name, String country,String city, String iataCode, double latitude, double longitude) {
-        super(name, country, LocationType.AIRPORT);
+        this.name = name;
+        this.country = country;
         this.city = city;
         this.iataCode =iataCode;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.locationType = LocationType.AIRPORT;
     }
 
 }

@@ -10,6 +10,7 @@ import com.sky.tempest_server.flights.entities.City;
 import com.sky.tempest_server.flights.entities.Flight;
 import com.sky.tempest_server.flights.entities.Location;
 import com.sky.tempest_server.flights.exceptions.InvalidLocationTypeException;
+import com.sky.tempest_server.flights.repositories.AirportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,9 @@ public class FlightsService {
 
     @Autowired
     private final TequilaAPIService tequilaAPIService;
+
+    @Autowired
+    private AirportRepository airportRepository;
 
     public FlightsService(TequilaAPIService tequilaAPIService) {
         this.tequilaAPIService = tequilaAPIService;
@@ -109,8 +113,8 @@ public class FlightsService {
                         flightNode.get("route").get(0).get("local_departure").textValue(),
                         flightNode.get("route").get(0).get("local_arrival").textValue(),
                         flightNode.get("duration").get("total").intValue(),
-                        (Airport) searchLocations("airport",flightNode.get("flyFrom").textValue()).get(0),
-                        (Airport) searchLocations("airport",flightNode.get("flyTo").textValue()).get(0),
+                        findAirport(flightNode.get("flyFrom").textValue()),
+                        findAirport(flightNode.get("flyTo").textValue()),
                         flightNode.get("route").get(0).get("airline").textValue()
                 );
             } catch (Exception e) {
@@ -120,6 +124,17 @@ public class FlightsService {
 
     }
 
+    private Airport findAirport(String iataCode) throws IOException {
+        Airport airport;
+        if(airportRepository.existsById(iataCode)){
+            airport = airportRepository.findById(iataCode).get();
+        } else{
+            airport = (Airport) searchLocations("airport",iataCode).get(0);
+            airportRepository.save(airport);
+        }
+
+        return airport;
+    }
 
 
 
