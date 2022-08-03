@@ -20,12 +20,16 @@ public class TempestServerApplication {
 	@Bean
 	CommandLineRunner runner(){
 		return args -> {
-			user_repository.save(new User("admin@sky.uk","Jane","Doe",
-					"$2a$10$LmptYa4uWhkO/OO.lpmahO14w0WKBzyKQOAXeSrYal04KKt.OTcRu",
-					"ADMIN"));
-			user_repository.save(new User("user@sky.uk","John","Smith",
-					"$2a$10$6CJhx.freP/GXr56EItYJeVc2r9P3o/ns/adeKBAuf8d65Y8qz2qi",
-					"USER"));
+			if(user_repository.findUserByEmail("admin@sky.uk").isEmpty()){
+				user_repository.save(new User("admin@sky.uk","Jane","Doe",
+						"$2a$10$LmptYa4uWhkO/OO.lpmahO14w0WKBzyKQOAXeSrYal04KKt.OTcRu",
+						"ADMIN"));
+			}
+			if(user_repository.findUserByEmail("user@sky.uk").isEmpty()){
+				user_repository.save(new User("user@sky.uk","John","Smith",
+						"$2a$10$6CJhx.freP/GXr56EItYJeVc2r9P3o/ns/adeKBAuf8d65Y8qz2qi",
+						"USER"));
+			}
 		};
 	}
 }
