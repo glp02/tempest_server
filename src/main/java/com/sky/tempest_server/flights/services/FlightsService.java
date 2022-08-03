@@ -15,6 +15,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,7 +34,7 @@ public class FlightsService {
         this.tequilaAPIService = tequilaAPIService;
     }
 
-    public List<Location> searchLocations(String locationType, String searchText) throws Exception {
+    public List<Location> searchLocations(String locationType, String searchText) throws IOException {
         //BUILD URL WITH QUERY PARAMETERS
         String queryUrlParams = UriComponentsBuilder.fromPath("")
                 .queryParam("term", searchText)
@@ -60,7 +61,9 @@ public class FlightsService {
                     locationNode.get("name").textValue(),
                     locationNode.get("city").get("country").get("name").textValue(),
                     locationNode.get("city").get("name").textValue(),
-                    locationNode.get("code").textValue()
+                    locationNode.get("code").textValue(),
+                    locationNode.get("location").get("lat").doubleValue(),
+                    locationNode.get("location").get("lon").doubleValue()
             )).collect(Collectors.toList());
         }
         else throw new InvalidLocationTypeException();
@@ -97,18 +100,24 @@ public class FlightsService {
         JsonNode dataJSON = responseJSON.get("data");
         List<JsonNode> dataList = readJsonArrayToJsonNodeList.readValue(dataJSON);
 
-        return dataList.stream().map((flightNode) -> new Flight(
-                flightNode.get("id").textValue(),
-                flightNode.get("route").get(0).get("flight_no").intValue(),
-                flightNode.get("route").get(0).get("local_departure").textValue(),
-                flightNode.get("route").get(0).get("local_arrival").textValue(),
-                flightNode.get("duration").get("total").intValue(),
-                flightNode.get("flyFrom").textValue(),
-                flightNode.get("flyTo").textValue(),
-                flightNode.get("cityFrom").textValue(),
-                flightNode.get("cityTo").textValue(),
-                flightNode.get("route").get(0).get("airline").textValue()
-        )).collect(Collectors.toList());
+
+        return dataList.stream().map((flightNode) -> {
+            try {
+                return new Flight(
+                        flightNode.get("id").textValue(),
+                        flightNode.get("route").get(0).get("flight_no").intValue(),
+                        flightNode.get("route").get(0).get("local_departure").textValue(),
+                        flightNode.get("route").get(0).get("local_arrival").textValue(),
+                        flightNode.get("duration").get("total").intValue(),
+                        (Airport) searchLocations("airport",flightNode.get("flyFrom").textValue()).get(0),
+                        (Airport) searchLocations("airport",flightNode.get("flyTo").textValue()).get(0),
+                        flightNode.get("route").get(0).get("airline").textValue()
+                );
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).collect(Collectors.toList());
+
     }
 
 

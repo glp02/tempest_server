@@ -1,14 +1,17 @@
 package com.sky.tempest_server.flights.services;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sky.tempest_server.flights.entities.Airport;
 import com.sky.tempest_server.flights.entities.Flight;
 import com.sky.tempest_server.flights.entities.Journey;
 import com.sky.tempest_server.flights.entities.JourneyDTO;
 import com.sky.tempest_server.flights.exceptions.JourneyNotFoundException;
 import com.sky.tempest_server.flights.exceptions.MyJsonProcessingException;
+import com.sky.tempest_server.flights.repositories.AirportRepository;
 import com.sky.tempest_server.flights.repositories.FlightsRepository;
 import com.sky.tempest_server.flights.repositories.JourneyRepository;
 import com.sky.tempest_server.user.entities.User;
+import com.sky.tempest_server.user.filters.LoginFilter;
 import com.sky.tempest_server.user.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,7 +29,13 @@ public class JourneyService {
     private UserService userService;
 
     @Autowired
+    private FlightsService flightsService;
+
+    @Autowired
     private FlightsRepository flightsRepository;
+
+    @Autowired
+    AirportRepository airportRepository;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -57,10 +66,15 @@ public class JourneyService {
             throw new MyJsonProcessingException();
         }
 
+
+
+
         if(!flightsRepository.existsById(outboundFlight.getId())){
+            saveAirportsFromFlight(outboundFlight);
             flightsRepository.save(outboundFlight);
         }
         if(returnFlight!=null && !flightsRepository.existsById(returnFlight.getId())){
+            saveAirportsFromFlight(returnFlight);
             flightsRepository.save(returnFlight);
         }
         Journey journey = new Journey(user,journeyName, outboundFlight, returnFlight);
@@ -94,17 +108,36 @@ public class JourneyService {
             String departureDate = flightJsonNode.get("departureDate").textValue();
             String arrivalDate = flightJsonNode.get("departureDate").textValue();
             int duration = flightJsonNode.get("duration").intValue();
-            String departureAirportCode = flightJsonNode.get("departureAirportCode").textValue();
-            String arrivalAirportCode = flightJsonNode.get("arrivalAirportCode").textValue();
-            String departureCity = flightJsonNode.get("departureCity").textValue();
-            String arrivalCity = flightJsonNode.get("arrivalCity").textValue();
+            Airport departureAirport = getAirportFromJson(flightJsonNode.get("departureAirport"));
+            Airport arrivalAirport = getAirportFromJson(flightJsonNode.get("arrivalAirport"));
             String airlineCode = flightJsonNode.get("airlineCode").textValue();
 
-            return new Flight(flightId,flightNumber,departureDate,arrivalDate,duration,departureAirportCode,
-                    arrivalAirportCode,departureCity,arrivalCity,airlineCode);
+            return new Flight(flightId,flightNumber,departureDate,arrivalDate,duration,departureAirport,arrivalAirport,airlineCode);
 
         } catch (Exception e) {
             throw new MyJsonProcessingException();
+        }
+    }
+
+    private Airport getAirportFromJson(JsonNode airportJsonNode){
+        return new Airport(
+                airportJsonNode.get("name").textValue(),
+                airportJsonNode.get("country").textValue(),
+                airportJsonNode.get("city").textValue(),
+                airportJsonNode.get("iataCode").textValue(),
+                airportJsonNode.get("latitude").doubleValue(),
+                airportJsonNode.get("longitude").doubleValue()
+        );
+    }
+
+    private void saveAirportsFromFlight(Flight flight){
+        Airport arrivalAirport = flight.getArrivalAirport();
+        Airport departureAirport = flight.getDepartureAirport();
+        if(!airportRepository.existsById(arrivalAirport.getIataCode())){
+            airportRepository.save(arrivalAirport);
+        }
+        if(!airportRepository.existsById(departureAirport.getIataCode())){
+            airportRepository.save(departureAirport);
         }
     }
 }

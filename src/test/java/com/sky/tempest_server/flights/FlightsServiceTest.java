@@ -38,8 +38,8 @@ public class FlightsServiceTest {
 
         List<Airport> resultAirports = flightsService.searchAirports(searchText);
 
-        assertEquals(new Airport("Gatwick","LGW","London","United Kingdom"),resultAirports.get(0));
-        assertEquals(new Airport("London Stansted","STN","London","United Kingdom"),resultAirports.get(1));
-        assertEquals(new Airport("Heathrow","LHR","London","United Kingdom"),resultAirports.get(2));
+        assertEquals(new Airport("Gatwick","LGW","London","United Kingdom",1,1),resultAirports.get(0));
+        assertEquals(new Airport("London Stansted","STN","London","United Kingdom",1,1),resultAirports.get(1));
+        assertEquals(new Airport("Heathrow","LHR","London","United Kingdom",1,1),resultAirports.get(2));
     }
 }
