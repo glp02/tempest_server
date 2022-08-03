@@ -42,7 +42,7 @@ public class Journey implements Serializable {
         setReturnFlight(returnFlight);
     }
 
-    /*public JourneyDTO dto(){
+    public JourneyDTO dto(){
         return new JourneyDTO(getId(),getUser().getEmail(),getName(),getOutboundFlight(),getReturnFlight());
-    }*/
+    }
 }
