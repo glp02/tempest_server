@@ -9,9 +9,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
 
-//@Entity
+@Entity
 @Table(name = "flights")
 @Data
 @NoArgsConstructor
@@ -21,7 +20,7 @@ public class Flight {
     //maybe use flight api unique id?
     @Id
     @NotNull
-   // @Column(unique = true,nullable = false,name = "flight_id")
+    @Column(unique = true,nullable = false,name = "flight_id")
     //@val not sure what this is?
     private String id;
 
