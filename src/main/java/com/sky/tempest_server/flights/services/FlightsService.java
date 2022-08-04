@@ -10,6 +10,7 @@ import com.sky.tempest_server.flights.entities.City;
 import com.sky.tempest_server.flights.entities.Flight;
 import com.sky.tempest_server.flights.entities.Location;
 import com.sky.tempest_server.flights.exceptions.InvalidLocationTypeException;
+import com.sky.tempest_server.flights.exceptions.MyJsonProcessingException;
 import com.sky.tempest_server.flights.repositories.AirportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -27,15 +28,13 @@ public class FlightsService {
 
     private static final String TEQUILA_LOCATIONS_ENDPOINT = "https://tequila-api.kiwi.com/locations/query";
     private static final String TEQUILA_FLIGHTS_ENDPOINT = "https://tequila-api.kiwi.com/v2/search";
-
-    @Autowired
     private final TequilaAPIService tequilaAPIService;
+    private final AirportRepository airportRepository;
 
     @Autowired
-    private AirportRepository airportRepository;
-
-    public FlightsService(TequilaAPIService tequilaAPIService) {
+    public FlightsService(TequilaAPIService tequilaAPIService,AirportRepository airportRepository) {
         this.tequilaAPIService = tequilaAPIService;
+        this.airportRepository=airportRepository;
     }
 
     public List<Location> searchLocations(String locationType, String searchText) throws IOException {
@@ -86,7 +85,6 @@ public class FlightsService {
             throw new InvalidLocationTypeException();
         }
 
-
         //BUILD URL WITH QUERY PARAMETERS
         String queryUrlParams = UriComponentsBuilder.fromPath("")
                 .queryParam("date_from", flightDate)
@@ -117,8 +115,15 @@ public class FlightsService {
                         findAirportFromCode(flightNode.get("flyTo").textValue()),
                         flightNode.get("route").get(0).get("airline").textValue()
                 );
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            } catch (Throwable e) {
+                switch (e.getClass().getCanonicalName()){
+                    case "IOException":
+                        throw new RuntimeException("Airport not found.");
+                    default:
+                        throw new MyJsonProcessingException();
+
+                }
+                //throw new MyJsonProcessingException();
             }
         }).collect(Collectors.toList());
 
@@ -126,18 +131,14 @@ public class FlightsService {
 
     private Airport findAirportFromCode(String iataCode) throws IOException {
         Airport airport;
-        if(airportRepository.existsById(iataCode)){
+        if(airportRepository.findById(iataCode).isPresent()){
             airport = airportRepository.findById(iataCode).get();
         } else{
             airport = (Airport) searchLocations("airport",iataCode).get(0);
             airportRepository.save(airport);
         }
-
         return airport;
     }
-
-
-
 
 }
 

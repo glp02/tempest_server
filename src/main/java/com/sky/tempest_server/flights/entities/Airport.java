@@ -2,6 +2,7 @@ package com.sky.tempest_server.flights.entities;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
@@ -16,8 +17,8 @@ import java.io.Serializable;
 @Entity
 @Table(name="airport")
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
 public class Airport extends Location implements Serializable {
+
 
     @Id
     @NotNull
@@ -57,6 +58,16 @@ public class Airport extends Location implements Serializable {
         this.latitude = latitude;
         this.longitude = longitude;
         this.locationType = LocationType.AIRPORT;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(o instanceof Airport) {
+            Airport airport = ((Airport) o);
+            return super.equals(airport)
+                    && (this.getIataCode()).equals(airport.getIataCode())
+                    && (this.getCity()).equals(airport.getCity());
+        } else return false;
     }
 
 }
