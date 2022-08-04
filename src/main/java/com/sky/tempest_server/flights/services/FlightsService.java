@@ -25,8 +25,8 @@ public class FlightsService {
     private final ObjectMapper mapper = new ObjectMapper();
     private final ObjectReader readJsonArrayToJsonNodeList = mapper.readerFor(new TypeReference<List<JsonNode>>() {});
 
-    static final String TEQUILA_LOCATIONS_ENDPOINT = "https://tequila-api.kiwi.com/locations/query";
-    static final String TEQUILA_FLIGHTS_ENDPOINT = "https://tequila-api.kiwi.com/v2/search";
+    private static final String TEQUILA_LOCATIONS_ENDPOINT = "https://tequila-api.kiwi.com/locations/query";
+    private static final String TEQUILA_FLIGHTS_ENDPOINT = "https://tequila-api.kiwi.com/v2/search";
 
     @Autowired
     private final TequilaAPIService tequilaAPIService;
@@ -113,8 +113,8 @@ public class FlightsService {
                         flightNode.get("route").get(0).get("local_departure").textValue(),
                         flightNode.get("route").get(0).get("local_arrival").textValue(),
                         flightNode.get("duration").get("total").intValue(),
-                        findAirport(flightNode.get("flyFrom").textValue()),
-                        findAirport(flightNode.get("flyTo").textValue()),
+                        findAirportFromCode(flightNode.get("flyFrom").textValue()),
+                        findAirportFromCode(flightNode.get("flyTo").textValue()),
                         flightNode.get("route").get(0).get("airline").textValue()
                 );
             } catch (Exception e) {
@@ -124,7 +124,7 @@ public class FlightsService {
 
     }
 
-    private Airport findAirport(String iataCode) throws IOException {
+    private Airport findAirportFromCode(String iataCode) throws IOException {
         Airport airport;
         if(airportRepository.existsById(iataCode)){
             airport = airportRepository.findById(iataCode).get();
