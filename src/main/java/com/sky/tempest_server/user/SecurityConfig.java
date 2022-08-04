@@ -39,7 +39,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
+        http.cors().and().authorizeRequests()
                 //specifies request paths to allow general access too (anonymous)
                 .antMatchers(HttpMethod.POST,"/login","/register").anonymous()
                 .antMatchers(HttpMethod.GET,"/flights/search-airports",

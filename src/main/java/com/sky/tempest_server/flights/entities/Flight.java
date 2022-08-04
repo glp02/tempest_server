@@ -51,4 +51,8 @@ public class Flight implements Serializable {
     @Column(nullable = false,name = "airline_code")
     private String airlineCode;
 
+    @NotNull
+    @Column(nullable = false, name = "flight_price")
+    private int price;
+
 }

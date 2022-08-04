@@ -113,7 +113,8 @@ public class FlightsService {
                         flightNode.get("duration").get("total").intValue(),
                         findAirportFromCode(flightNode.get("flyFrom").textValue()),
                         findAirportFromCode(flightNode.get("flyTo").textValue()),
-                        flightNode.get("route").get(0).get("airline").textValue()
+                        flightNode.get("route").get(0).get("airline").textValue(),
+                        flightNode.get("price").intValue()
                 );
             } catch (Throwable e) {
                 switch (e.getClass().getCanonicalName()){
