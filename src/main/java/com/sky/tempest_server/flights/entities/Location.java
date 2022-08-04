@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 public abstract class Location {
 
@@ -14,7 +13,4 @@ public abstract class Location {
         AIRPORT
     }
 
-    private String name;
-    private String country;
-    private LocationType locationType;
 }

@@ -10,6 +10,7 @@ import com.sky.tempest_server.user.exceptions.RegistrationException;
 import com.sky.tempest_server.user.repositories.UserRepository;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -30,7 +31,7 @@ public class UserService implements UserDetailsService {
     @Autowired
     private UserRepository repository;
 
-    static final String PREFIX = "Bearer";
+    public static final String PREFIX = "Bearer";
 
     private final ObjectMapper mapper = new ObjectMapper();
     private final ObjectReader readJsonArrayToJsonNodeList = mapper.readerFor(new TypeReference<List<JsonNode>>() {
@@ -45,7 +46,7 @@ public class UserService implements UserDetailsService {
             String rawPassword = responseJSON.get("password").textValue();
             String encryptedPassword = ENCODER.encode(rawPassword);
             User newUser = new User(email, firstName, lastName, encryptedPassword, "USER");
-            if(repository.findUserByEmail(email).isEmpty()){
+            if (repository.findUserByEmail(email).isEmpty()) {
                 repository.save(newUser);
                 return ("Registered new User: " + newUser.getDTO().toString());
             } else {
@@ -56,15 +57,8 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public UserDTO getUserDetails(@RequestHeader("Authorization") String token) {
-        if (token != null) {
-            String userEmail = Jwts.parser()
-                    .setSigningKey(SIGNING_KEY)
-                    .parseClaimsJws(token.replace(PREFIX, ""))
-                    .getBody()
-                    .getSubject();
-            return repository.findUserByEmail(userEmail).get().getDTO();
-        } else return null;
+    public UserDTO getUserDetails(String token) {
+        return findUserByToken(token).getDTO();
     }
 
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -75,4 +69,20 @@ public class UserService implements UserDetailsService {
                 AuthorityUtils.createAuthorityList(currentUser.getRole()));
     }
 
+    public User findUserByToken(String token) throws UsernameNotFoundException {
+        if (token != null) {
+            String userEmail = Jwts.parser()
+                    .setSigningKey(SIGNING_KEY)
+                    .parseClaimsJws(token.replace(PREFIX, ""))
+                    .getBody()
+                    .getSubject();
+            if (repository.findUserByEmail(userEmail).isEmpty()) {
+                throw new UsernameNotFoundException("User not found.");
+            } else {
+                return repository.findUserByEmail(userEmail).get();
+            }
+        } else {
+            throw new AuthenticationServiceException("No Authorization token found");
+        }
+    }
 }

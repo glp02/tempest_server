@@ -1,4 +1,4 @@
-package com.sky.tempest_server.flights;
+package com.sky.tempest_server.flights.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
