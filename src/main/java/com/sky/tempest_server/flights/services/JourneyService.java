@@ -106,7 +106,7 @@ public class JourneyService {
             String flightId = flightJsonNode.get("id").textValue();
             int flightNumber = flightJsonNode.get("flightNumber").intValue();
             String departureDate = flightJsonNode.get("departureDate").textValue();
-            String arrivalDate = flightJsonNode.get("departureDate").textValue();
+            String arrivalDate = flightJsonNode.get("arrivalDate").textValue();
             int duration = flightJsonNode.get("duration").intValue();
             Airport departureAirport = getAirportFromJson(flightJsonNode.get("departureAirport"));
             Airport arrivalAirport = getAirportFromJson(flightJsonNode.get("arrivalAirport"));
