@@ -93,13 +93,10 @@ public class FlightsServiceTest {
 
 
         List<Flight> resultFlights = flightsService.searchFlights(testDate, locationType, flyFrom, locationType, flyTo);
-        new Flight("testId",0,"testDepartureDate","testArrivalDate",1000,testAirport1,testAirport2,"BA");
-
-
 
         assertEquals(new Flight(
                 "0f6425c34b144b294add7d64_0|0f6425c34b144b294add7d64_1",
-                308, "2022-08-16T11:00:00.000Z","2022-08-16T13:20:00.000Z",4800,testAirport1,testAirport2,"BA"),resultFlights.get(0));
+                308, "2022-08-16T11:00:00.000Z","2022-08-16T13:20:00.000Z",4800,testAirport1,testAirport2,"BA",373),resultFlights.get(0));
     }
 
     @org.junit.Test

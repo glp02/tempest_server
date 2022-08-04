@@ -111,8 +111,9 @@ public class JourneyService {
             Airport departureAirport = getAirportFromJson(flightJsonNode.get("departureAirport"));
             Airport arrivalAirport = getAirportFromJson(flightJsonNode.get("arrivalAirport"));
             String airlineCode = flightJsonNode.get("airlineCode").textValue();
+            int price = flightJsonNode.get("price").intValue();
 
-            return new Flight(flightId,flightNumber,departureDate,arrivalDate,duration,departureAirport,arrivalAirport,airlineCode);
+            return new Flight(flightId,flightNumber,departureDate,arrivalDate,duration,departureAirport,arrivalAirport,airlineCode,price);
 
         } catch (Exception e) {
             throw new MyJsonProcessingException();
