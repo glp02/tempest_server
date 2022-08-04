@@ -2,16 +2,22 @@ package com.sky.tempest_server.flights.entities;
 
 import lombok.*;
 
-@Getter @Setter
+
+@Data
+@NoArgsConstructor
 public class City extends Location {
     private String cityCode;
 
-    public City() {
-        super();
-    }
+    private String name;
+
+    private String country;
+
+    private LocationType locationType;
 
     public City(String name, String country, String cityCode) {
-        super(name, country, LocationType.CITY);
+        this.name=name;
+        this.country=country;
+        this.locationType = LocationType.CITY;
         this.cityCode = cityCode;
     }
 

@@ -4,24 +4,21 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
+import java.io.Serializable;
 
-//@Entity
-@Table(name = "flights")
+@Entity
+@Table(name = "flight")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Flight {
+public class Flight implements Serializable {
 
     //maybe use flight api unique id?
     @Id
     @NotNull
-   // @Column(unique = true,nullable = false,name = "flight_id")
+    @Column(unique = true,nullable = false,name = "flight_id", updatable = false)
     //@val not sure what this is?
     private String id;
 
@@ -42,21 +39,13 @@ public class Flight {
     @Column(nullable = false,name = "duration")
     private int duration;
 
-    @NotNull
-    @Column(nullable = false,name = "departure_airport_code")
-    private String departureAirportCode;
+    @ManyToOne
+    @JoinColumn(nullable = false, name="departure_airport",referencedColumnName = "iata_code" )
+    private Airport departureAirport;
 
-    @NotNull
-    @Column(nullable = false,name = "arrival_airport_code")
-    private String arrivalAirportCode;
-
-    @NotNull
-    @Column(nullable = false,name = "departure_city")
-    private String departureCity;
-
-    @NotNull
-    @Column(nullable = false,name = "arrival_city")
-    private String arrivalCity;
+    @ManyToOne
+    @JoinColumn(nullable = false, name="arrival_airport",referencedColumnName = "iata_code" )
+    private Airport arrivalAirport;
 
     @NotNull
     @Column(nullable = false,name = "airline_code")

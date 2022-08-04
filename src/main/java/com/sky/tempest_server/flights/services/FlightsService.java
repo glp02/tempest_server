@@ -1,4 +1,4 @@
-package com.sky.tempest_server.flights;
+package com.sky.tempest_server.flights.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -10,14 +10,14 @@ import com.sky.tempest_server.flights.entities.City;
 import com.sky.tempest_server.flights.entities.Flight;
 import com.sky.tempest_server.flights.entities.Location;
 import com.sky.tempest_server.flights.exceptions.InvalidLocationTypeException;
+import com.sky.tempest_server.flights.exceptions.MyJsonProcessingException;
+import com.sky.tempest_server.flights.repositories.AirportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,17 +26,18 @@ public class FlightsService {
     private final ObjectMapper mapper = new ObjectMapper();
     private final ObjectReader readJsonArrayToJsonNodeList = mapper.readerFor(new TypeReference<List<JsonNode>>() {});
 
-    static final String TEQUILA_LOCATIONS_ENDPOINT = "https://tequila-api.kiwi.com/locations/query";
-    static final String TEQUILA_FLIGHTS_ENDPOINT = "https://tequila-api.kiwi.com/v2/search";
+    private static final String TEQUILA_LOCATIONS_ENDPOINT = "https://tequila-api.kiwi.com/locations/query";
+    private static final String TEQUILA_FLIGHTS_ENDPOINT = "https://tequila-api.kiwi.com/v2/search";
+    private final TequilaAPIService tequilaAPIService;
+    private final AirportRepository airportRepository;
 
     @Autowired
-    private final TequilaAPIService tequilaAPIService;
-
-    public FlightsService(TequilaAPIService tequilaAPIService) {
+    public FlightsService(TequilaAPIService tequilaAPIService,AirportRepository airportRepository) {
         this.tequilaAPIService = tequilaAPIService;
+        this.airportRepository=airportRepository;
     }
 
-    public List<Location> searchLocations(String locationType, String searchText) throws Exception {
+    public List<Location> searchLocations(String locationType, String searchText) throws IOException {
         //BUILD URL WITH QUERY PARAMETERS
         String queryUrlParams = UriComponentsBuilder.fromPath("")
                 .queryParam("term", searchText)
@@ -63,7 +64,9 @@ public class FlightsService {
                     locationNode.get("name").textValue(),
                     locationNode.get("city").get("country").get("name").textValue(),
                     locationNode.get("city").get("name").textValue(),
-                    locationNode.get("code").textValue()
+                    locationNode.get("code").textValue(),
+                    locationNode.get("location").get("lat").doubleValue(),
+                    locationNode.get("location").get("lon").doubleValue()
             )).collect(Collectors.toList());
         }
         else throw new InvalidLocationTypeException();
@@ -99,18 +102,42 @@ public class FlightsService {
         JsonNode dataJSON = responseJSON.get("data");
         List<JsonNode> dataList = readJsonArrayToJsonNodeList.readValue(dataJSON);
 
-        return dataList.stream().map((flightNode) -> new Flight(
-                flightNode.get("id").textValue(),
-                flightNode.get("route").get(0).get("flight_no").intValue(),
-                flightNode.get("route").get(0).get("local_departure").textValue(),
-                flightNode.get("route").get(0).get("local_arrival").textValue(),
-                flightNode.get("duration").get("total").intValue(),
-                flightNode.get("flyFrom").textValue(),
-                flightNode.get("flyTo").textValue(),
-                flightNode.get("cityFrom").textValue(),
-                flightNode.get("cityTo").textValue(),
-                flightNode.get("route").get(0).get("airline").textValue()
-        )).collect(Collectors.toList());
+
+        return dataList.stream().map((flightNode) -> {
+            try {
+                return new Flight(
+                        flightNode.get("id").textValue(),
+                        flightNode.get("route").get(0).get("flight_no").intValue(),
+                        flightNode.get("route").get(0).get("local_departure").textValue(),
+                        flightNode.get("route").get(0).get("local_arrival").textValue(),
+                        flightNode.get("duration").get("total").intValue(),
+                        findAirportFromCode(flightNode.get("flyFrom").textValue()),
+                        findAirportFromCode(flightNode.get("flyTo").textValue()),
+                        flightNode.get("route").get(0).get("airline").textValue()
+                );
+            } catch (Throwable e) {
+                switch (e.getClass().getCanonicalName()){
+                    case "IOException":
+                        throw new RuntimeException("Airport not found.");
+                    default:
+                        throw new MyJsonProcessingException();
+
+                }
+                //throw new MyJsonProcessingException();
+            }
+        }).collect(Collectors.toList());
+
+    }
+
+    private Airport findAirportFromCode(String iataCode) throws IOException {
+        Airport airport;
+        if(airportRepository.findById(iataCode).isPresent()){
+            airport = airportRepository.findById(iataCode).get();
+        } else{
+            airport = (Airport) searchLocations("airport",iataCode).get(0);
+            airportRepository.save(airport);
+        }
+        return airport;
     }
 
 }
